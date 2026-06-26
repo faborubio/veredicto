@@ -7,6 +7,22 @@
 
 ---
 
+## 2026-06-26 · Fase 2 (incremento 1) — Fundación de persistencia de políticas
+
+**Qué se hizo:** versionado inmutable de políticas sobre Postgres real.
+
+- **SQLAlchemy 2.0:** `db.py` (Base, engine, session factory desde `DATABASE_URL`), `modelos.py` (`PoliticaORM`: PK compuesta `(politica_id, version)`, reglas y config_scoring como **JSONB**, `vigente` flag). Predicados persistidos vía el `a_dict`/`predicado_desde_dict` existente.
+- **Mapper entidad↔fila** (`mapeo_politica.py`) — la frontera ORM vive ahí, no en el dominio. Round-trip exacto.
+- **`RepositorioPoliticasSQLAlchemy`:** `obtener`, `vigente_para`, `guardar_version` (inmutable: regrabar → `PoliticaInvalida`, CF-04), `activar` (una sola vigente por producto, CF-05).
+- **Alembic:** init + `env.py` apuntado a nuestra metadata + `DATABASE_URL`; migración **autogenerada** (`eb82c8b056da`) y aplicada al Postgres local (tabla verificada). `migrations/` excluido de ruff.
+- **Test de integración (testcontainers + Postgres efímero):** round-trip exacto (incl. AST), inmutabilidad (CF-04), y el entregable Fase 2 "**cambio umbral → nueva versión, la vieja intacta**". Marker `integration`.
+
+**Dónde quedó:** gate verde (ruff · format · mypy 63 src+tests · lint-imports 3/3 · pytest 135 + 3 integración). El test de integración tarda ~3 min (levanta contenedor). **DI aún NO swapeado:** la app/REST sigue en repos memoria (no rompe tests sin BD); el swap a SQL se hace junto con la persistencia de decisiones (incremento 2) para mover toda la app a Postgres a la vez, probablemente tras flag `DATABASE_URL`.
+
+**Próximos pasos (Fase 2):** incremento 2 = persistir **decisiones + snapshot** de insumos (ADR-004) en Postgres (repo SQL + migración). Incremento 3 = `GestionarReglas` + API REST de gestión (crear versión con validación CF-01/02/03, activar como **evento auditado** ADR-008). Luego swap DI completo + Vista de halcón + auditoría de cierre.
+
+---
+
 ## 2026-06-26 · Fase 1 CERRADA — cableado de entrega + Vista de halcón + auditoría
 
 **Qué se hizo:** completado y cerrado el entregable de Fase 1.

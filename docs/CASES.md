@@ -26,8 +26,8 @@
 | CF-01 | Regla con predicado mal formado | Rompe evaluación en runtime | Validación al crear la versión; nunca persistir política inválida | 🟡 `predicado_desde_dict` valida la forma (`test_predicado_mal_formado_desde_dict`); validación al versionar la política → Fase 2 |
 | CF-02 | Suma de pesos de scoring ≠ esperado | Score sin sentido | Validar coherencia de pesos al versionar | 🟡 `Regla` valida peso↔tipo SCORING; coherencia de score_maximo → Fase 2 |
 | CF-03 | Regla referencia un `fuente_dato` inexistente | Falla silenciosa o KeyError | Validar que todo campo referenciado exista en el contrato de insumos | 🟡 `CAMPOS_INSUMO` + `campos_referenciados()` (`test_seed_politica_respeta_el_contrato_de_insumos`); enforce al construir Politica → Fase 2 |
-| CF-04 | Intento de mutar una política ya usada en decisiones | Rompe inmutabilidad y auditoría | Prohibido; sólo se crea nueva versión | 🔴 |
-| CF-05 | Dos políticas marcadas "vigentes" en el mismo período | Ambigüedad de qué versión aplica | Invariante: una sola vigente por producto/período | 🔴 |
+| CF-04 | Intento de mutar una política ya usada en decisiones | Rompe inmutabilidad y auditoría | Prohibido; sólo se crea nueva versión | 🟢 `test_version_es_inmutable` (regrabar v existente → `PoliticaInvalida`) |
+| CF-05 | Dos políticas marcadas "vigentes" en el mismo período | Ambigüedad de qué versión aplica | Invariante: una sola vigente por producto/período | 🟡 `activar` desactiva las demás del producto (`test_nueva_version_no_altera_la_vieja`); constraint en BD pendiente |
 
 ## Proceso: Simulación (what-if)
 
