@@ -19,6 +19,7 @@ from domain.entities.predicado import (
     Comparacion,
     Comparador,
     Predicado,
+    ValorComparable,
     predicado_desde_dict,
 )
 from domain.errores import ErrorValidacion
@@ -55,7 +56,7 @@ def test_in_membresia() -> None:
 def test_orden_rechaza_no_entero_en_evaluacion() -> None:
     pred = Comparacion("x", Comparador.GT, 10)
     with pytest.raises(ErrorValidacion):
-        pred.evaluar({"x": "no-entero"})  # type: ignore[dict-item]
+        pred.evaluar({"x": "no-entero"})
 
 
 def test_orden_rechaza_bool_como_entero() -> None:
@@ -88,13 +89,13 @@ def test_campo_ausente_es_error_de_contrato() -> None:
 def test_and_or_not() -> None:
     a = Comparacion("dti", Comparador.GT, 4500)
     b = Comparacion("situacion", Comparador.EQ, "DEPENDIENTE")
-    valores = {"dti": 5000, "situacion": "DEPENDIENTE"}
+    valores: dict[str, ValorComparable] = {"dti": 5000, "situacion": "DEPENDIENTE"}
 
     assert Combinacion(Combinador.AND, (a, b)).evaluar(valores) is True
     assert Combinacion(Combinador.OR, (a, b)).evaluar(valores) is True
     assert Combinacion(Combinador.NOT, (a,)).evaluar(valores) is False
 
-    valores_bajo = {"dti": 1000, "situacion": "DEPENDIENTE"}
+    valores_bajo: dict[str, ValorComparable] = {"dti": 1000, "situacion": "DEPENDIENTE"}
     assert Combinacion(Combinador.AND, (a, b)).evaluar(valores_bajo) is False
     assert Combinacion(Combinador.OR, (a, b)).evaluar(valores_bajo) is True
 

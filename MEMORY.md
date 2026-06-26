@@ -7,6 +7,20 @@
 
 ---
 
+## 2026-06-26 · Fase 1 CERRADA — cableado de entrega + Vista de halcón + auditoría
+
+**Qué se hizo:** completado y cerrado el entregable de Fase 1.
+
+- **Cableado de entrega:** `EvaluarSolicitud` (idempotencia, fija política, snapshot), **buró simulado** (5 escenarios), repos en memoria, **DI con `injector`** (cierra placeholder R3 `binder`), **REST `POST /evaluaciones`** → decisión + rastro. **CI** en GitHub Actions (gate completo en cada push).
+- **Vista de halcón de Fase 1** (registrada en `docs/AUDIT.md`). Bloqueantes corregidos en el acto: **EV-01** (RUT módulo 11 + `desde_texto` + enmascarado PII), **golden-file del rastro** (SAD §8.2), **EV-05/EV-06** tests, y **el gate ahora tipa los tests** (`mypy src tests`, local y CI). Diferidos documentados: DTI semánticamente débil (refinar con `cuota_mensual` en política futura), CF-03 enforce al versionar (Fase 2).
+- **Auditoría APROBADA** (sign-off Fabián). `CLAUDE.md` → **Fase 2**. `CASES.md`: EV-01/02/03/05/06/07 🟢.
+
+**Dónde quedó:** gate verde local y en CI (ruff · format · mypy 57 src+tests · lint-imports 3/3 · pytest 131). Pendiente OPCIONAL: revisión independiente del motor (subagente fresco o `/code-review ultra`) — control contra M3 (auditor=implementador).
+
+**Próximos pasos (Fase 2 — Configurabilidad):** versionado inmutable de políticas en Postgres (SQLAlchemy + Alembic), API de gestión de reglas (`GestionarReglas`: crear versión con validación CF-01/02/03, activar como evento auditado ADR-008), snapshot de insumos persistido (ADR-004). Reemplazar repos en memoria por SQLAlchemy (cambio de binds en `di.py`). Mapeo entidad↔fila sólo en repos (frontera).
+
+---
+
 ## 2026-06-26 · Fase 1 — Motor de evaluación + contrato de Insumos + política consumo v1
 
 **Qué se hizo:** núcleo de Fase 1. Motor determinista funcionando punta a punta (en dominio).

@@ -72,6 +72,39 @@ Marcar cada ítem antes de cerrar una fase:
 
 <!-- Anexar nuevas auditorías ABAJO, en orden cronológico. -->
 
+### 2026-06-26 · Auditoría de cierre — Fase 1: Motor + rastro
+
+**Resultado:** APROBADA
+
+**Checklist:**
+
+- [x] **Vista de halcón corrida y registrada** (abajo); bloqueantes cerrados.
+- [x] Entregable Fase 1 (`SAD §13`): evaluación determinista hard-stops + scoring, rastro, REST mínima, tests + property-test de determinismo. Demostrable: `POST /evaluaciones` → decisión + rastro.
+- [x] **Fronteras intactas:** import-linter 3/3 KEPT; `application ↛ infrastructure` blindada; composition root en infra (`di.py`).
+- [x] **Invariantes:** motor puro (sin I/O/reloj/azar/float), scoring entero, entidades inmutables, idempotencia (ADR-010), versión de política fijada por request (ADR-008).
+- [x] **Property-test de determinismo** verde (el invariante estrella) + golden-file del rastro (SAD §8.2).
+- [x] Casos borde: EV-01/02/03/05/06/07 🟢; CF-01/02/03 🟡 (validación al versionar → Fase 2). `CASES.md` actualizado.
+- [x] Errores registrados en `TROUBLESHOOTING.md` (TS-003: gate local debe espejar CI).
+- [x] `MEMORY.md` actualizado · `CLAUDE.md` → Fase 2 · sin secretos/PII (RUT enmascarable, §8.1).
+- [x] **CI verde** en GitHub Actions (ruff + format + mypy src/tests + lint-imports + pytest).
+
+**Calidad (gate):** ruff ✓ · ruff format ✓ · mypy --strict ✓ (57, src+tests) · lint-imports ✓ (3/3) · pytest ✓ (131).
+
+**Vista de halcón (revisión crítica):**
+- 🔴 **EV-01 — RUT sin validar** (datos basura al motor). → **corregido ahora:** dígito verificador módulo 11 en `Rut` + `desde_texto` + enmascarado PII; fixtures con RUTs válidos.
+- 🟡 **Sin golden-file del rastro** (SAD §8.2 lo pide). → **corregido ahora:** `test_golden_rastro_perfil_limpio`.
+- 🟡 **EV-05/EV-06 sin test dedicado.** → **corregido ahora.**
+- 🟡 **El gate no tipaba los tests** (CI sólo `mypy src`). → **corregido ahora:** `mypy src tests` local y en CI.
+- 🟡 **DTI semánticamente débil:** `deuda_total/ingreso_mensual` no es carga financiera (cuota/ingreso); los umbrales no son significativos contra esa métrica. → **diferido:** refinar con input `cuota_mensual` en una versión futura de política (ADR-003). Documentado en `insumos.py`.
+- 🟡 **CF-03 no se enforce al construir `Politica`** (sólo testeado en la semilla). → **diferido a Fase 2** (GestionarReglas + validación al versionar).
+- 🟢 `ante_dato_faltante` inalcanzable en R1/R2/R5 (campos siempre disponibles): cosmético. Mapeo de errores REST grueso (`PoliticaInexistente`→409): refinar en Fase 2. Warning de Starlette (httpx): cosmético.
+
+**Nota de independencia (M3):** esta Vista de halcón la corrió el mismo agente que implementó. Queda pendiente, como control independiente opcional, una revisión con subagente fresco o `/code-review ultra` sobre el motor.
+
+**Acciones antes de avanzar:** completadas (bloqueantes cerrados + sign-off).
+
+**Sign-off:** Fabián (corporativo@caucorp.com) — 2026-06-26
+
 ### 2026-06-26 · Auditoría de cierre — Fase 0: Scaffolding
 
 **Resultado:** APROBADA

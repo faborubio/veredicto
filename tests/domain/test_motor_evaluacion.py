@@ -14,6 +14,7 @@ from hypothesis import strategies as st
 from domain.entities.insumos import CAMPOS_INSUMO, Insumos
 from domain.entities.perfil_crediticio import PerfilCrediticio
 from domain.entities.politica import ResultadoDecision
+from domain.entities.rastro import ResultadoEvaluacionRegla
 from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
 from domain.services.motor_evaluacion import MotorEvaluacion
 from domain.value_objects.disponibilidad import Disponibilidad
@@ -116,6 +117,51 @@ def test_empate_exacto_en_banda_aprueba() -> None:
 def test_rastro_tiene_una_entrada_por_regla() -> None:
     decision = _MOTOR.evaluar(_insumos(), _POLITICA)
     assert len(decision.rastro.evaluaciones) == len(_POLITICA.reglas)
+
+
+def test_monto_fuera_de_rango_es_hard_stop() -> None:
+    # EV-05: monto bajo el mínimo del producto → RECHAZADO.
+    decision = _MOTOR.evaluar(_insumos(monto=100_000), _POLITICA)
+    assert decision.resultado is ResultadoDecision.RECHAZADO
+
+
+def test_multiples_hard_stops_se_registran_todos() -> None:
+    # EV-06: el motor no corta; registra TODAS las reglas y decide RECHAZADO.
+    decision = _MOTOR.evaluar(_insumos(monto=100_000, plazo=120), _POLITICA)
+    assert decision.resultado is ResultadoDecision.RECHAZADO
+    fallas_hard_stop = [
+        e
+        for e in decision.rastro.evaluaciones
+        if e.regla_id in {"R1-monto-rango", "R2-plazo-rango"}
+        and e.resultado is ResultadoEvaluacionRegla.FALLA
+    ]
+    assert len(fallas_hard_stop) == 2
+
+
+def test_golden_rastro_perfil_limpio() -> None:
+    # Golden-file / snapshot del rastro (SAD §8.2): congela el (regla_id, resultado,
+    # aporte) de un caso canónico. Si cambia sin querer, el test lo grita.
+    decision = _MOTOR.evaluar(_insumos(), _POLITICA)
+    observado = [
+        (e.regla_id, e.resultado.value, e.aporte_score) for e in decision.rastro.evaluaciones
+    ]
+    esperado = [
+        ("R1-monto-rango", "PASA", 0),
+        ("R2-plazo-rango", "PASA", 0),
+        ("R3-sin-morosidad", "PASA", 0),
+        ("R4-sin-castigadas", "PASA", 0),
+        ("R5-ingreso-minimo", "PASA", 0),
+        ("R6-dti-tope", "PASA", 0),
+        ("R7a-dti-excelente", "FALLA", 0),
+        ("R7b-dti-bueno", "PASA", 25),
+        ("R7c-dti-aceptable", "FALLA", 0),
+        ("R8a-dependiente", "PASA", 30),
+        ("R8b-pensionado", "FALLA", 0),
+        ("R8c-independiente", "FALLA", 0),
+        ("R9a-historial-solido", "PASA", 30),
+        ("R9b-historial-medio", "FALLA", 0),
+    ]
+    assert observado == esperado
 
 
 # --- Invariante estrella: determinismo (property-based) --------------------

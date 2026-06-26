@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from domain.value_objects.rut import calcular_dv
 from interfaces.rest.app import app
 
 _CLIENTE = TestClient(app)
@@ -17,7 +18,7 @@ def _payload(rut_numero: int = 11_111_111, key: str = "rest-1") -> dict[str, obj
     return {
         "idempotency_key": key,
         "rut_numero": rut_numero,
-        "rut_dv": "1",
+        "rut_dv": calcular_dv(rut_numero),
         "ingreso_mensual": 1_000_000,
         "situacion_laboral": "DEPENDIENTE",
         "producto": "consumo",

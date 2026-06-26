@@ -12,7 +12,7 @@ from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
 from domain.services.motor_evaluacion import MotorEvaluacion
 from domain.value_objects.monto import Monto
 from domain.value_objects.plazo import Plazo
-from domain.value_objects.rut import Rut
+from domain.value_objects.rut import Rut, calcular_dv
 from infrastructure.buro.buro_simulado import ESCENARIOS_DEMO, BuroSimulado
 from infrastructure.persistence.memoria import (
     RepositorioDecisionesMemoria,
@@ -37,7 +37,9 @@ def _caso_de_uso() -> tuple[EvaluarSolicitud, RepositorioDecisionesMemoria]:
 
 
 def _solicitud(rut_numero: int = 11_111_111, key: str = "k-1") -> Solicitud:
-    solicitante = Solicitante(Rut(rut_numero, "1"), Monto(1_000_000), SituacionLaboral.DEPENDIENTE)
+    solicitante = Solicitante(
+        Rut(rut_numero, calcular_dv(rut_numero)), Monto(1_000_000), SituacionLaboral.DEPENDIENTE
+    )
     return Solicitud(key, solicitante, "consumo", Monto(2_000_000), Plazo(24))
 
 

@@ -53,8 +53,9 @@ Python 3.12+ · Pydantic v2 · FastAPI · SQLAlchemy 2.0 · PostgreSQL · `injec
 
 ## 5. Fase actual
 
-**FASE 1 — Motor + rastro.** (Actualizar este campo al cambiar de fase.)
-> Fase 0 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): scaffolding + toolchain (uv) + Postgres healthy.
+**FASE 2 — Configurabilidad.** (Actualizar este campo al cambiar de fase.)
+> Fase 1 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): motor determinista + rastro + REST mínima + CI. 131 tests verdes.
+> Fase 0 cerrada y auditada el 2026-06-26: scaffolding + toolchain (uv) + Postgres.
 
 Hoja de ruta completa en [`SAD.md` §13](./SAD.md#13-hoja-de-ruta-por-fases).
 No se avanza de fase sin auditoría registrada en [`docs/AUDIT.md`](./docs/AUDIT.md).

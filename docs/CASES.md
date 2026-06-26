@@ -11,12 +11,12 @@
 
 | # | Caso | Por qué es peligroso | Comportamiento esperado | Estado |
 |---|------|----------------------|--------------------------|--------|
-| EV-01 | RUT inválido (dígito verificador incorrecto) | Datos basura entran al motor | Rechazo de validación antes de evaluar; error tipado | 🔴 |
+| EV-01 | RUT inválido (dígito verificador incorrecto) | Datos basura entran al motor | Rechazo de validación antes de evaluar; error tipado | 🟢 `test_rut.py` (módulo 11) |
 | EV-02 | Solicitante sin historial (*thin file*) | Reglas que asumen historial pueden fallar o aprobar de más | Derivar a `REVISION_MANUAL`, no rechazar ni aprobar automático | 🟢 `test_thin_file_fuerza_revision` |
 | EV-03 | Ingreso reportado = 0 o nulo | División por cero al calcular DTI | DTI indefinido → hard-stop con razón clara, sin excepción no controlada | 🟢 `test_ingreso_cero_rechaza_sin_division_por_cero` |
 | EV-04 | Buró no responde / timeout | El motor no puede ser puro si depende de I/O | El caso de uso maneja el fallo; el motor sólo recibe datos ya resueltos o marca de "dato no disponible" | 🟡 motor maneja `NO_DISPONIBLE`; timeout del gateway pendiente del caso de uso (`test_buro_no_disponible_fuerza_revision`) |
-| EV-05 | Monto solicitado fuera de rango de producto | Decisión sin sentido de negocio | Hard-stop de elegibilidad con razón | 🟡 implementado (R1 hard-stop); falta test dedicado |
-| EV-06 | Múltiples hard-stops fallan a la vez | ¿Cuál razón se reporta? | Registrar todas las hard-stops evaluadas hasta el corte; decisión = RECHAZADO | 🟡 el motor no corta: evalúa y registra TODAS las reglas en el rastro; falta test multi-hardstop |
+| EV-05 | Monto solicitado fuera de rango de producto | Decisión sin sentido de negocio | Hard-stop de elegibilidad con razón | 🟢 `test_monto_fuera_de_rango_es_hard_stop` |
+| EV-06 | Múltiples hard-stops fallan a la vez | ¿Cuál razón se reporta? | Registrar todas las hard-stops evaluadas hasta el corte; decisión = RECHAZADO | 🟢 `test_multiples_hard_stops_se_registran_todos` (el motor no corta; registra todas) |
 | EV-07 | Empate exacto en el umbral de banda de score | Ambigüedad aprobado/revisión | Definir comparación determinista (ej. `>=` documentado) y testearla | 🟢 `test_empate_exacto_en_banda_aprueba` (`>=` sobre `umbral_min`) |
 
 ## Proceso: Configuración de reglas / políticas
