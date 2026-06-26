@@ -37,9 +37,7 @@ def _caso_de_uso() -> tuple[EvaluarSolicitud, RepositorioDecisionesMemoria]:
 
 
 def _solicitud(rut_numero: int = 11_111_111, key: str = "k-1") -> Solicitud:
-    solicitante = Solicitante(
-        Rut(rut_numero, "1"), Monto(1_000_000), SituacionLaboral.DEPENDIENTE
-    )
+    solicitante = Solicitante(Rut(rut_numero, "1"), Monto(1_000_000), SituacionLaboral.DEPENDIENTE)
     return Solicitud(key, solicitante, "consumo", Monto(2_000_000), Plazo(24))
 
 
