@@ -15,7 +15,7 @@
 - **Vista de halcón de Fase 1** (registrada en `docs/AUDIT.md`). Bloqueantes corregidos en el acto: **EV-01** (RUT módulo 11 + `desde_texto` + enmascarado PII), **golden-file del rastro** (SAD §8.2), **EV-05/EV-06** tests, y **el gate ahora tipa los tests** (`mypy src tests`, local y CI). Diferidos documentados: DTI semánticamente débil (refinar con `cuota_mensual` en política futura), CF-03 enforce al versionar (Fase 2).
 - **Auditoría APROBADA** (sign-off Fabián). `CLAUDE.md` → **Fase 2**. `CASES.md`: EV-01/02/03/05/06/07 🟢.
 
-**Dónde quedó:** gate verde local y en CI (ruff · format · mypy 57 src+tests · lint-imports 3/3 · pytest 131). Pendiente OPCIONAL: revisión independiente del motor (subagente fresco o `/code-review ultra`) — control contra M3 (auditor=implementador).
+**Dónde quedó:** gate verde local y en CI (ruff · format · mypy 57 src+tests · lint-imports 3/3 · pytest 131). **Decisión del proyecto:** sin revisión independiente externa (subagente/`/code-review ultra`); la Vista de halcón (autocrítica) es el único control de cierre. No volver a ofrecerla.
 
 **Próximos pasos (Fase 2 — Configurabilidad):** versionado inmutable de políticas en Postgres (SQLAlchemy + Alembic), API de gestión de reglas (`GestionarReglas`: crear versión con validación CF-01/02/03, activar como evento auditado ADR-008), snapshot de insumos persistido (ADR-004). Reemplazar repos en memoria por SQLAlchemy (cambio de binds en `di.py`). Mapeo entidad↔fila sólo en repos (frontera).
 

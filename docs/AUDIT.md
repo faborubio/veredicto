@@ -99,7 +99,7 @@ Marcar cada ítem antes de cerrar una fase:
 - 🟡 **CF-03 no se enforce al construir `Politica`** (sólo testeado en la semilla). → **diferido a Fase 2** (GestionarReglas + validación al versionar).
 - 🟢 `ante_dato_faltante` inalcanzable en R1/R2/R5 (campos siempre disponibles): cosmético. Mapeo de errores REST grueso (`PoliticaInexistente`→409): refinar en Fase 2. Warning de Starlette (httpx): cosmético.
 
-**Nota de independencia (M3):** esta Vista de halcón la corrió el mismo agente que implementó. Queda pendiente, como control independiente opcional, una revisión con subagente fresco o `/code-review ultra` sobre el motor.
+**Nota de independencia (M3):** decisión del proyecto (2026-06-26) — **NO se usará revisión independiente externa** (subagente fresco ni `/code-review ultra`). La Vista de halcón (autocrítica adversarial) es el único control de cierre. M3 aceptado como deuda consciente; no volver a ofrecer revisión independiente en cierres futuros.
 
 **Acciones antes de avanzar:** completadas (bloqueantes cerrados + sign-off).
 
