@@ -7,6 +7,22 @@
 
 ---
 
+## 2026-06-26 · Fase 1 — Motor de evaluación + contrato de Insumos + política consumo v1
+
+**Qué se hizo:** núcleo de Fase 1. Motor determinista funcionando punta a punta (en dominio).
+
+- **Contrato de Insumos** cerrado (`CAMPOS_INSUMO`, 8 campos) + acceso uniforme `valor_y_disponibilidad(campo)`. Derivación de DTI en bps enteros con manejo de ingreso 0 (EV-03, sin división por cero). Disponibilidad por campo (buró parcial/ausente). Extendido `Solicitante` con `ingreso_mensual` y `situacion_laboral` (enum).
+- **`MotorEvaluacion.evaluar`** implementado: PURO, hard-stops → scoring entero → bandas. Precedencia determinista documentada: RECHAZADO (hard-stop falla) > REVISION_MANUAL (forzar por dato faltante) > banda de score. Convención: el predicado expresa la condición para que la regla PASE. `EvaluacionRegla` extendido (tipo, disponibilidad, valor_observado, aporte_score, explicación) → rastro auditable real.
+- **Política consumo v1** como dato semilla (`infrastructure/seed/politica_consumo.py`): 14 reglas (6 hard-stops + 8 scoring). Decisión de modelado: el scoring por tramos se expande a reglas booleanas con peso fijo y rangos excluyentes (fiel a ADR-002). Thin file (EV-02) = `meses_historial` NO_DISPONIBLE → FORZAR_REVISION. Bandas ≥70/40-69/<40. Umbrales = defaults v1 acordados con el usuario (refinables vía v2, ADR-003).
+- **Tests:** 108 totales. Property-test de **determinismo del motor** (el invariante estrella) + score entero en rango. Casos: perfil limpio→APROBADO(85), morosidad→RECHAZADO, buró ausente→REVISION, ingreso 0→RECHAZADO (EV-03), thin file→REVISION (EV-02), empate banda 70→APROBADO (EV-07), contrato CF-03. `CASES.md` actualizado (EV-02/03/07 🟢; EV-04/05/06, CF-01/02/03 🟡).
+- **R3 (placeholder `object`):** `Regla.predicado` ahora es `Predicado`; queda pendiente sólo `simular`/`criterio` (Fase 3) y `binder` (DI).
+
+**Dónde quedó:** gate verde (ruff · mypy strict 45 · lint-imports 3/3 · pytest 108). Commits AST (`e8ee775`) + este incremento. **Falta para cerrar Fase 1:** caso de uso `EvaluarSolicitud` (idempotencia + fijar política + snapshot), **buró simulado** con fixtures por escenario, y **REST mínima** (endpoint de evaluación). Luego: Vista de halcón de Fase 1 + auditoría.
+
+**Próximos pasos:** EvaluarSolicitud + BuroSimulado (fixtures: limpio/morosidad/thin file/ingresos no verificables/castigadas) + endpoint REST. Considerar R2 (CI) en este tramo.
+
+---
+
 ## 2026-06-26 · Vista de halcón de Fase 0 + proceso institucionalizado
 
 **Qué se hizo:** revisión crítica adversarial de Fase 0 y formalización del proceso.
