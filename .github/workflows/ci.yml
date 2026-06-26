@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.24"
+
+      - name: Sincronizar entorno (uv usa Python 3.12 vía .python-version)
+        run: uv sync --extra dev
+
+      - name: Ruff (lint)
+        run: uv run ruff check .
+
+      - name: Ruff (formato)
+        run: uv run ruff format --check .
+
+      - name: Mypy (tipado estricto)
+        run: uv run mypy src
+
+      - name: Import-linter (fronteras de arquitectura)
+        run: uv run lint-imports
+
+      - name: Pytest
+        run: uv run pytest
