@@ -10,19 +10,14 @@ Marcado `integration`: requiere Docker.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import replace
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-import infrastructure.persistence.modelos  # noqa: F401  (registra tablas)
 from domain.errores import PoliticaInvalida
-from infrastructure.persistence.db import Base, crear_session_factory
 from infrastructure.persistence.repositorio_politicas_sql import RepositorioPoliticasSQLAlchemy
 from infrastructure.seed.politica_consumo import politica_consumo_v1
-
-PostgresContainer = pytest.importorskip("testcontainers.postgres").PostgresContainer
 
 pytestmark = pytest.mark.integration
 
@@ -30,11 +25,8 @@ _MOMENTO = "2026-06-26T12:00:00+00:00"
 
 
 @pytest.fixture(scope="module")
-def repo() -> Iterator[RepositorioPoliticasSQLAlchemy]:
-    with PostgresContainer("postgres:16-alpine", driver="psycopg") as postgres:
-        engine = create_engine(postgres.get_connection_url())
-        Base.metadata.create_all(engine)
-        yield RepositorioPoliticasSQLAlchemy(crear_session_factory(engine))
+def repo(session_factory: sessionmaker[Session]) -> RepositorioPoliticasSQLAlchemy:
+    return RepositorioPoliticasSQLAlchemy(session_factory)
 
 
 def test_round_trip_exacto(repo: RepositorioPoliticasSQLAlchemy) -> None:

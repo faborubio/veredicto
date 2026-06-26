@@ -7,6 +7,22 @@
 
 ---
 
+## 2026-06-26 · Fase 2 (incremento 2) — Persistencia de decisiones + snapshot
+
+**Qué se hizo:** decisiones del motor + SNAPSHOT íntegro de insumos en Postgres (ADR-004).
+
+- **`DecisionORM`** (tabla `decisiones`): PK `idempotency_key` (ADR-010); `politica_id/version`, `resultado`, `score` como columnas (consultables); `rastro` y `snapshot` como **JSONB**.
+- **Mapper** (`mapeo_decision.py`): serializa/reconstruye `DecisionMotor` (rastro completo) e `Insumos` (solicitud + perfil as-seen). Round-trip exacto → reproducibilidad real.
+- **`RepositorioDecisionesSQLAlchemy`**: `por_idempotency_key`, `por_solicitud`, `guardar` (idempotente, no duplica), `snapshots_de_poblacion` (base de la simulación Fase 3).
+- **Alembic:** migración autogenerada `aa3a566593c7` (tabla decisiones) aplicada. Cadena: `eb82c8b056da → aa3a566593c7`.
+- **Integración:** contenedor Postgres **compartido por sesión** (`conftest.py`) — refactorizado el test de políticas para usarlo (6 tests integración, 1 solo contenedor). Tests: round-trip de decisión+rastro, reconstrucción fiel del snapshot, idempotencia.
+
+**Dónde quedó:** gate verde (ruff · format · mypy 67 · lint-imports 3/3 · pytest 143 = 137 + 6 integración, ~2.5 min). Persisten en Postgres tanto políticas como decisiones+snapshot. **DI todavía en memoria** (la app aún no usa SQL); el swap completo va en el incremento 3 junto con `GestionarReglas`.
+
+**Próximos pasos (Fase 2):** incremento 3 = `GestionarReglas` (crear versión con validación CF-01/02/03, activar como **evento auditado** ADR-008) + API REST de gestión + **swap DI a SQL** (toda la app a Postgres tras `DATABASE_URL`). Luego Vista de halcón + auditoría de cierre de Fase 2.
+
+---
+
 ## 2026-06-26 · Fase 2 (incremento 1) — Fundación de persistencia de políticas
 
 **Qué se hizo:** versionado inmutable de políticas sobre Postgres real.

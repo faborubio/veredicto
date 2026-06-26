@@ -31,3 +31,24 @@ class PoliticaORM(Base):
     efectiva_hasta: Mapped[str | None] = mapped_column(String, nullable=True)
     vigente: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     creada_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class DecisionORM(Base):
+    """Decisión del motor + SNAPSHOT íntegro de insumos (ADR-004).
+
+    Indexada por `idempotency_key` (ADR-010). El `snapshot` guarda los insumos
+    tal como se vieron —incluida la disponibilidad de cada dato— para reproducir
+    la decisión y para la simulación what-if (Fase 3). `rastro` guarda la
+    explicación estructurada. La versión de política queda fijada en columnas.
+    """
+
+    __tablename__ = "decisiones"
+
+    idempotency_key: Mapped[str] = mapped_column(String, primary_key=True)
+    politica_id: Mapped[str] = mapped_column(String, index=True)
+    politica_version: Mapped[int] = mapped_column(Integer)
+    resultado: Mapped[str] = mapped_column(String, index=True)
+    score: Mapped[int] = mapped_column(Integer)
+    rastro: Mapped[Any] = mapped_column(JSONB)
+    snapshot: Mapped[Any] = mapped_column(JSONB)
+    creada_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
