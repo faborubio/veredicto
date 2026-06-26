@@ -1,0 +1,22 @@
+# Postgres local para Fase local (~USD 0). Ver DEPLOY.md.
+# Las migraciones (Alembic) se incorporan en Fase 2; en Fase 0 sólo levantamos el motor.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: veredicto-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-veredicto}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-veredicto}
+      POSTGRES_DB: ${POSTGRES_DB:-veredicto}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - veredicto_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-veredicto}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  veredicto_pgdata:

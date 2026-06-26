@@ -1,0 +1,109 @@
+[project]
+name = "veredicto"
+version = "0.0.0"
+description = "Motor de decisión de crédito determinista, auditable y explicable, con capa MCP."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "Veredicto" }]
+
+# Dependencias de runtime. Mínimas en Fase 0: el esqueleto no necesita la web aún,
+# pero declaramos el stack acordado en el SAD §2.1 para fijar versiones desde el inicio.
+dependencies = [
+    "pydantic>=2.7",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "injector>=0.21",
+    "fastmcp>=0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    "import-linter>=2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Layout src/ con paquetes top-level importables (domain, application, infrastructure,
+# interfaces) tal como los referencian README.md y DEPLOY.md (p.ej. `interfaces.rest.app`).
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/domain",
+    "src/application",
+    "src/infrastructure",
+    "src/interfaces",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff — linter + formateador
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+# ---------------------------------------------------------------------------
+# mypy — tipado estricto (Pydantic v2 + type hints en todo, SAD §2.1)
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+# ---------------------------------------------------------------------------
+# import-linter — vigila la frontera dura: domain/ no importa nada hacia afuera.
+# (CLAUDE.md invariante 2 · SAD ADR-001 · AUDIT.md checklist de fronteras)
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_packages = ["domain", "application", "infrastructure", "interfaces"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Clean Architecture: las dependencias apuntan hacia adentro"
+type = "layers"
+layers = [
+    "interfaces",
+    "application",
+    "domain",
+]
+# infrastructure es un adaptador hermano de interfaces: implementa puertos del
+# dominio pero no es importado por application/domain. Se cubre con el contrato
+# de independencia de abajo.
+
+[[tool.importlinter.contracts]]
+name = "El dominio es puro: no conoce frameworks ni adaptadores"
+type = "forbidden"
+source_modules = ["domain"]
+forbidden_modules = [
+    "application",
+    "infrastructure",
+    "interfaces",
+    "sqlalchemy",
+    "fastapi",
+    "fastmcp",
+    "mcp",
+    "injector",
+    "psycopg",
+]
