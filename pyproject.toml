@@ -93,11 +93,32 @@ layers = [
 # de independencia de abajo.
 
 [[tool.importlinter.contracts]]
-name = "El dominio es puro: no conoce frameworks ni adaptadores"
+name = "El dominio es puro: stdlib-only, sin frameworks ni adaptadores"
 type = "forbidden"
 source_modules = ["domain"]
+# Decisión de proyecto: el dominio es STDLIB-ONLY (dataclasses/enums), ni siquiera
+# Pydantic puro (más estricto que SAD §5.1; ver Vista de halcón Fase 0 en AUDIT.md).
 forbidden_modules = [
     "application",
+    "infrastructure",
+    "interfaces",
+    "sqlalchemy",
+    "fastapi",
+    "fastmcp",
+    "mcp",
+    "injector",
+    "psycopg",
+    "pydantic",
+]
+
+[[tool.importlinter.contracts]]
+name = "La aplicación depende sólo del dominio (nunca de adaptadores ni frameworks)"
+type = "forbidden"
+source_modules = ["application"]
+# B1 (Vista de halcón Fase 0): blindar application ↛ infrastructure. Los casos de
+# uso orquestan vía PUERTOS del dominio; el cableado concreto vive en el
+# composition root (interfaces → infrastructure, permitido), no en application.
+forbidden_modules = [
     "infrastructure",
     "interfaces",
     "sqlalchemy",

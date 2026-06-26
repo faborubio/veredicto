@@ -7,6 +7,20 @@
 
 ---
 
+## 2026-06-26 · Vista de halcón de Fase 0 + proceso institucionalizado
+
+**Qué se hizo:** revisión crítica adversarial de Fase 0 y formalización del proceso.
+
+- **Hallazgos y decisiones** (detalle en `docs/AUDIT.md`): 🔴 **B1** frontera `application ↛ infrastructure` no blindada → **corregido** (nuevo contrato import-linter, 3/3 KEPT). 🟡 **R4** smoke tests sólo en `domain` → **corregido** (`tests/test_imports.py` recorre las 4 capas; 71 tests). 🟡 R2 (CI) y R3 (placeholders `object`) → diferidos/deuda trackeada. M1/M2/M3 → menores.
+- **Decisión de diseño:** el **dominio es stdlib-only** (sin Pydantic, ni puro). Se endureció `SAD §5.1` y se agregó `pydantic` a los módulos prohibidos del dominio en import-linter. Más estricto que el SAD original a propósito.
+- **Proceso:** la **Vista de halcón** queda como gate obligatorio antes de cada transición de fase (`CLAUDE.md §7` + sección y plantilla en `docs/AUDIT.md`). Es el control independiente contra "auditor = implementador" (M3).
+
+**Dónde quedó:** quality gate verde tras los fixes (ruff ✓ · mypy strict ✓ 47 archivos · lint-imports ✓ 3/3 · pytest ✓ 71). Listo para empezar Fase 1 con la frontera ya blindada. Pendiente commit+push de estos cambios.
+
+**Próximos pasos:** sin cambios respecto al plan de Fase 1 (AST de `Predicado` → contrato de Insumos → reglas reales [validar umbrales con el usuario] → motor → buró simulado → property-test de determinismo → RUT módulo 11). Considerar cerrar R2 (CI con GitHub Actions) temprano en Fase 1.
+
+---
+
 ## 2026-06-26 · Fase 0 — Scaffolding implementado (estructura + toolchain + esqueleto de dominio)
 
 **Qué se hizo:** primer código del proyecto. Scaffolding completo de Fase 0.

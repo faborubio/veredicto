@@ -86,7 +86,9 @@ No se avanza de fase sin auditoría registrada en [`docs/AUDIT.md`](./docs/AUDIT
 1. Anexar avance a `MEMORY.md`.
 2. Registrar errores nuevos en `docs/TROUBLESHOOTING.md`.
 3. Anexar casos borde nuevos a `docs/CASES.md`.
-4. Si se cerró una fase: auditar y registrar en `docs/AUDIT.md` antes de avanzar.
+4. Si se cerró una fase: **correr la Vista de halcón** (revisión crítica adversarial, ver `docs/AUDIT.md`), cerrar los hallazgos 🔴 bloqueantes, y recién entonces auditar y registrar el sign-off en `docs/AUDIT.md`. No se avanza de fase sin esto.
+
+**Antes de empezar una fase nueva:** confirmar que la Vista de halcón de la fase anterior está registrada con sus hallazgos resueltos o explícitamente diferidos.
 
 ---
 

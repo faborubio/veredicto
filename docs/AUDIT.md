@@ -9,6 +9,7 @@
 
 Marcar cada ítem antes de cerrar una fase:
 
+- [ ] **Vista de halcón corrida y registrada** (revisión crítica adversarial; ver más abajo y `CLAUDE.md §7`). Cada hallazgo con decisión explícita.
 - [ ] El entregable cumple lo definido para la fase en `SAD.md §13`.
 - [ ] **Fronteras de arquitectura intactas:** `domain/` no importa SQLAlchemy/FastAPI/FastMCP. (Verificado con linter de imports.)
 - [ ] **Invariantes respetados** (ver `CLAUDE.md §2`). En particular: determinismo del motor.
@@ -22,6 +23,26 @@ Marcar cada ítem antes de cerrar una fase:
 
 ---
 
+## Vista de halcón — qué es y cómo se corre
+
+> Gate **obligatorio antes de cada transición de fase**, distinto del checklist. El
+> checklist es mecánico ("¿se hizo X?"); la vista de halcón es **adversarial**:
+> busca activamente lo que está mal o frágil. Es el control independiente que evita
+> que "auditor = implementador" se autovalide.
+
+**Qué se caza activamente:**
+1. **Fugas de frontera** — ¿alguna capa importa hacia afuera? ¿está *blindado* por linter, no sólo "no pasa hoy"?
+2. **Violaciones de invariantes** (`CLAUDE.md §2`) — `float` en scoring, I/O o reloj en el dominio, mutación de inmutables, `eval`.
+3. **No-determinismo escondido** — `set`/`dict` con orden relevante, `datetime.now()`, azar.
+4. **Contradicciones con el SAD** — el código contradice una ADR o el SAD quedó desactualizado respecto a una decisión real.
+5. **Sobre-ingeniería** — abstracción o scaffolding por delante de la necesidad de la fase.
+6. **Tipos/placeholders débiles** — `object`/`Any` que anulan el tipado estricto; rastrear a qué fase se resuelven.
+7. **Huecos de test** — caminos sin cubrir, casos de `CASES.md` sin test.
+
+**Salida:** lista de hallazgos categorizados **🔴 Bloqueante / 🟡 Recomendado / 🟢 Menor**, y para cada uno una **decisión explícita**: *corregir ahora* / *diferir a Fase N* / *aceptar como deuda*. Los bloqueantes se cierran antes del sign-off.
+
+---
+
 ## Plantilla de entrada de auditoría
 
 ```
@@ -31,8 +52,10 @@ Marcar cada ítem antes de cerrar una fase:
 
 **Checklist:** (pegar checklist base con marcas reales)
 
-**Hallazgos:**
-- ...
+**Vista de halcón (revisión crítica):**
+- 🔴 Bloqueante: <hallazgo> → decisión: corregir ahora / ...
+- 🟡 Recomendado: <hallazgo> → decisión: ...
+- 🟢 Menor / deuda: <hallazgo> → decisión: ...
 
 **Observaciones / deuda aceptada:**
 - ...
@@ -66,9 +89,19 @@ Marcar cada ítem antes de cerrar una fase:
 - [x] `CLAUDE.md` actualizado a **Fase 1** tras el sign-off de esta auditoría.
 - [x] Sin secretos ni PII en el repo/logs (`.env` gitignored, `.env.example` con placeholders).
 
-**Calidad (gate):** `ruff check` ✓ · `ruff format` ✓ · `mypy --strict` ✓ (42 archivos) · `lint-imports` ✓ (2/2) · `pytest` ✓ (29).
+**Calidad (gate):** `ruff check` ✓ · `ruff format` ✓ · `mypy --strict` ✓ (47 archivos) · `lint-imports` ✓ (3/3) · `pytest` ✓ (71).
 
-**Hallazgos:**
+**Vista de halcón (revisión crítica — añadida 2026-06-26):**
+- 🔴 **B1 — frontera `application ↛ infrastructure` no blindada.** El linter sólo protegía a `domain`; nada impedía que un caso de uso importara un repo concreto (no se violaba, pero no estaba blindado). → **Decisión: corregir ahora.** Agregado contrato `forbidden` con `source_modules=["application"]` (3/3 contratos KEPT).
+- 🟡 **R2 — sin CI.** El quality gate no corre en cada push. → **Decisión: diferir** (pendiente `.github/workflows/ci.yml` con uv; no bloquea Fase 1).
+- 🟡 **R3 — placeholders `object`** (`predicado`, `simular`→, `criterio`, `binder`) anulan mypy-strict puntualmente. → **Decisión: deuda trackeada.** `predicado`/`binder` → Fase 1; `simular`/`criterio` → Fase 3.
+- 🟡 **R4 — smoke tests sólo recorrían `domain`.** → **Decisión: corregir ahora.** Añadido `tests/test_imports.py` que importa todos los módulos de las 4 capas (71 tests totales).
+- 🟢 **M1 — tiempo/vigencia como `str` ISO crudo, sin validar.** → diferir (posible VO `Momento` en fase futura, manteniendo determinismo).
+- 🟢 **M2 — esqueletos vacíos un pelo por delante del alcance de Fase 0.** → aceptado (fijan la frontera).
+- 🟢 **M3 — auditor = implementador.** → mitigado: la Vista de halcón queda como gate independiente y obligatorio (`CLAUDE.md §7`).
+- ⚖️ **Decisión de diseño — dominio stdlib-only.** Se endureció el SAD §5.1: el dominio NO usa Pydantic (ni puro). `pydantic` añadido a los módulos prohibidos del dominio en import-linter.
+
+**Hallazgos (sesión):**
 - Discrepancia de rutas de docs resuelta: `AUDIT/TROUBLESHOOTING/CASES` movidos a `docs/` para coincidir con `SAD §12`.
 - `README` actualizado de `pip` a `uv` (decisión de tooling).
 

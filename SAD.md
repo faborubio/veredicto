@@ -181,7 +181,7 @@ graph TD
 
 **Regla de dependencia:** las flechas de dependencia apuntan hacia adentro. `domain/` no importa nada de `application/`, `infrastructure/` ni `interfaces/`. Los puertos (interfaces abstractas) se declaran en el dominio/aplicación; los adaptadores en infraestructura los implementan. `injector` cablea las implementaciones concretas en el arranque.
 
-> **Frontera dura (la que mata estos proyectos si se relaja):** ninguna clase de `domain/` puede importar SQLAlchemy, FastAPI, FastMCP, ni Pydantic-para-HTTP. Si necesitas un modelo de datos en el dominio, es una dataclass/Pydantic-model puro de dominio, no un modelo ORM. La traducción entidad↔fila vive en los repositorios. Esta frontera se audita en cada fase (ver `AUDIT.md`).
+> **Frontera dura (la que mata estos proyectos si se relaja):** el `domain/` es **stdlib-only** — modelado con `dataclasses` y `enum`, **sin Pydantic** (ni siquiera puro), sin SQLAlchemy, sin FastAPI, sin FastMCP. *(Decisión endurecida en la Vista de halcón de Fase 0: el SAD original permitía un "Pydantic-model puro de dominio"; se descartó para máxima pureza y para que la frontera sea trivial de blindar. Pydantic v2 sigue siendo el estándar en `application/`, `infrastructure/` e `interfaces/`.)* La traducción entidad↔fila vive en los repositorios. Esta frontera se audita en cada fase con `import-linter` (contrato `forbidden` sobre `domain`, ver `AUDIT.md`).
 
 ### 5.2 Nivel 2 — Módulos del dominio
 
