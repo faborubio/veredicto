@@ -13,6 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from domain.entities.predicado import Predicado
+from domain.errores import ErrorValidacion
+
 
 class Categoria(Enum):
     ELEGIBILIDAD = "ELEGIBILIDAD"
@@ -36,40 +39,41 @@ class AnteDatoFaltante(Enum):
     FORZAR_REVISION = "FORZAR_REVISION"
 
 
-# --- Predicado (AST) -------------------------------------------------------
-#
-# Esqueleto de Fase 0. El árbol se modela en Fase 1 como jerarquía de nodos
-# inmutables y serializables, p.ej.:
-#
-#   Predicado (ABC)
-#   ├── Comparacion(campo, operador, umbral)   # GT, GTE, LT, LTE, EQ, NEQ, IN
-#   └── Combinacion(operador, ramas)           # AND, OR, NOT
-#
-# Cada nodo expone:
-#   - evaluar(insumos) -> ResultadoEvaluacionNodo   (PURO, sin I/O)
-#   - campos_referenciados() -> set[str]            (valida fuente_dato, CF-03)
-#   - a_dict()/desde_dict()                         (serialización a DB/JSON)
-#
-# Se deja como marcador para no introducir un AST a medio diseñar en Fase 0.
-
-
 @dataclass(frozen=True, slots=True)
 class Regla:
     """Unidad declarativa de política. Dato dentro de una versión de `Politica`.
 
-    Esqueleto de Fase 0: el campo `predicado` se tipa como `object` hasta que el
-    AST exista en Fase 1; la evaluación vive en el motor, no aquí.
+    El `predicado` es un AST (`domain.entities.predicado`): seguro, serializable y
+    explicable. La evaluación de disponibilidad y scoring vive en el motor; la
+    regla sólo declara su comportamiento (incluido `ante_dato_faltante`, ADR-009).
     """
 
     id: str  # estable entre versiones (procedencia, ADR-003)
     nombre: str
     categoria: Categoria
     tipo: TipoRegla
-    predicado: object  # TODO(Fase 1): -> Predicado (AST)
+    predicado: Predicado
     fuente_dato: str  # qué insumo lee (trazabilidad)
     ante_dato_faltante: AnteDatoFaltante
     plantilla_explicacion: str  # "DTI {valor} supera el umbral {umbral}"
     peso: int | None = None  # ENTERO; sólo para tipo SCORING (sin float)
 
-    # TODO(Fase 1): validar que peso esté presente sii tipo == SCORING (CF-02),
-    # y que sea entero.
+    def __post_init__(self) -> None:
+        # Coherencia peso↔tipo (CASES.md CF-02): el peso existe sii es SCORING.
+        if self.tipo is TipoRegla.SCORING:
+            if not _es_peso_entero(self.peso):
+                raise ErrorValidacion(
+                    f"La regla SCORING '{self.id}' requiere un peso entero; recibió {self.peso!r}."
+                )
+        elif self.peso is not None:
+            raise ErrorValidacion(
+                f"La regla '{self.id}' de tipo {self.tipo.name} no debe declarar peso."
+            )
+
+    def campos_referenciados(self) -> frozenset[str]:
+        """Delegado al AST (para validar fuente_dato contra el contrato, CF-03)."""
+        return self.predicado.campos_referenciados()
+
+
+def _es_peso_entero(peso: int | None) -> bool:
+    return type(peso) is int

@@ -29,8 +29,7 @@ def _todos_los_modulos() -> list[str]:
     for paquete in _PAQUETES:
         nombres.append(paquete.__name__)
         nombres.extend(
-            m.name
-            for m in pkgutil.walk_packages(paquete.__path__, prefix=f"{paquete.__name__}.")
+            m.name for m in pkgutil.walk_packages(paquete.__path__, prefix=f"{paquete.__name__}.")
         )
     return nombres
 
