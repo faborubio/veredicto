@@ -28,6 +28,14 @@
 - **Solución:** **uv** gestiona la versión: `uv sync` descarga y usa Python 3.12 en `.venv` sin tocar el Python del sistema. uv se instaló con `pip install --user uv`.
 - **Regla de prevención:** no depender del Python global; correr todo con `uv run`. `.python-version` fija 3.12 para el proyecto.
 
+### TS-003 · CI falla en `ruff format --check` aunque `ruff check` pasa local
+
+- **Síntoma:** el CI rojo en el paso "Ruff (formato)": *"1 file would be reformatted"*, pese a que `ruff check .` local estaba verde.
+- **Contexto:** Fase 1, primer push con el workflow de CI. Se escribió un test nuevo y se corrió sólo `ruff check`, no `ruff format`.
+- **Causa raíz:** `ruff check` (lint) y `ruff format` (formateo) son pasos distintos. El gate local corría el primero pero no `ruff format --check`; el CI sí.
+- **Solución:** `uv run ruff format .` y re-commit.
+- **Regla de prevención:** el gate local DEBE espejar el CI exactamente: `ruff check . && ruff format --check . && mypy src && lint-imports && pytest`. Correr `ruff format` antes de cada commit.
+
 ### TS-000 (ejemplo/plantilla)
 
 - **Síntoma:** descripción observable del error (mensaje, comportamiento).
