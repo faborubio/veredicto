@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 
 from injector import Injector, Module, provider, singleton
+from sqlalchemy.orm import Session, sessionmaker
 
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
 from application.casos_uso.gestionar_reglas import GestionarReglas
@@ -103,10 +104,14 @@ class ModuloMemoria(Module):
 
 
 class ModuloSQL(Module):
-    """Persistencia SQLAlchemy sobre Postgres (`VEREDICTO_PERSISTENCIA=sql`)."""
+    """Persistencia SQLAlchemy sobre Postgres (`VEREDICTO_PERSISTENCIA=sql`).
 
-    def __init__(self) -> None:
-        self._sf = crear_session_factory(crear_engine())
+    Acepta un `session_factory` explícito (seam de testabilidad); si no, lo
+    construye desde `DATABASE_URL`.
+    """
+
+    def __init__(self, session_factory: sessionmaker[Session] | None = None) -> None:
+        self._sf = session_factory or crear_session_factory(crear_engine())
 
     @provider
     @singleton

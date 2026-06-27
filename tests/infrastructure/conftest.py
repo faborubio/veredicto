@@ -1,7 +1,8 @@
-"""Fixtures compartidas de integración: un único Postgres efímero por sesión.
+"""Fixtures de integración: un Postgres efímero por sesión, schema LIMPIO por test.
 
-Levantar el contenedor una sola vez (no por archivo) acelera la suite de
-integración. Marca implícita: estos tests requieren Docker.
+El contenedor se levanta una sola vez (caro); pero cada test recibe un esquema
+recién recreado (drop+create) para quedar AISLADO —sin estado acumulado entre
+tests, que es frágil y oculta bugs—. Requiere Docker.
 """
 
 from __future__ import annotations
@@ -9,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 import infrastructure.persistence.modelos  # noqa: F401  (registra todas las tablas)
@@ -19,8 +20,13 @@ PostgresContainer = pytest.importorskip("testcontainers.postgres").PostgresConta
 
 
 @pytest.fixture(scope="session")
-def session_factory() -> Iterator[sessionmaker[Session]]:
+def _engine() -> Iterator[Engine]:
     with PostgresContainer("postgres:16-alpine", driver="psycopg") as postgres:
-        engine = create_engine(postgres.get_connection_url())
-        Base.metadata.create_all(engine)
-        yield crear_session_factory(engine)
+        yield create_engine(postgres.get_connection_url())
+
+
+@pytest.fixture
+def session_factory(_engine: Engine) -> sessionmaker[Session]:
+    Base.metadata.drop_all(_engine)
+    Base.metadata.create_all(_engine)
+    return crear_session_factory(_engine)

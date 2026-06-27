@@ -53,8 +53,9 @@ Python 3.12+ · Pydantic v2 · FastAPI · SQLAlchemy 2.0 · PostgreSQL · `injec
 
 ## 5. Fase actual
 
-**FASE 2 — Configurabilidad.** (Actualizar este campo al cambiar de fase.)
-> Fase 1 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): motor determinista + rastro + REST mínima + CI. 131 tests verdes.
+**FASE 3 — Simulación.** (Actualizar este campo al cambiar de fase.)
+> Fase 2 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): versionado inmutable de políticas (Postgres + Alembic), API de gestión, snapshot persistido, DI env-driven. 155 tests verdes.
+> Fase 1 cerrada y auditada el 2026-06-26: motor determinista + rastro + REST mínima + CI.
 > Fase 0 cerrada y auditada el 2026-06-26: scaffolding + toolchain (uv) + Postgres.
 
 Hoja de ruta completa en [`SAD.md` §13](./SAD.md#13-hoja-de-ruta-por-fases).

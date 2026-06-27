@@ -72,6 +72,38 @@ Marcar cada ítem antes de cerrar una fase:
 
 <!-- Anexar nuevas auditorías ABAJO, en orden cronológico. -->
 
+### 2026-06-26 · Auditoría de cierre — Fase 2: Configurabilidad
+
+**Resultado:** APROBADA
+
+**Checklist:**
+
+- [x] **Vista de halcón corrida y registrada** (abajo); bloqueante cerrado.
+- [x] Entregable Fase 2 (`SAD §13`): versionado inmutable de políticas (Postgres), API de gestión de reglas, snapshot de insumos persistido. Demostrable por REST: crear v2 → vigente sigue v1 → activar → vigente v2, v1 intacta.
+- [x] **Fronteras intactas:** import-linter 3/3 KEPT; `domain` stdlib-only; `application ↛ infrastructure`; composition root en `di.py`.
+- [x] **Invariantes:** política inmutable (CF-04 enforced), una vigente por producto, activación auditada (ADR-008), snapshot íntegro (ADR-004). Determinismo del motor intacto.
+- [x] Tests verdes: 155 (147 unit + 8 integración con Postgres real, **aislados con schema limpio por test**). Property-test de determinismo intacto.
+- [x] Casos borde CF-01..CF-05 🟢; migraciones Alembic autogeneradas y aplicadas (`eb82c8b056da → aa3a566593c7 → 26f1cedb966d`).
+- [x] `MEMORY.md` / `CASES.md` actualizados; `CLAUDE.md` → Fase 3; sin secretos en repo. **CI verde.**
+
+**Calidad (gate):** ruff ✓ · format ✓ · mypy --strict ✓ (73, src+tests) · lint-imports ✓ (3/3) · pytest ✓ (155).
+
+**Vista de halcón (revisión crítica):**
+- 🔴 **Path SQL (`ModuloSQL`) sin test e2e** + **tests de integración compartían DB con estado acumulado** (frágil). → **corregido ahora:** schema limpio por test en `conftest`; tests auto-contenidos; seam de testabilidad en `ModuloSQL(session_factory=…)`; `test_di_sql` ejercita el wiring SQL completo (seed → vigente → evaluar → idempotencia vía Postgres).
+- 🟡 **PII en el snapshot sin pseudonimizar** (§8.1): RUT en claro en JSONB. → **diferido:** tokenización/cifrado del RUT como endurecimiento; la tensión retención/minimización ya está nombrada en el SAD (portafolio, no cumplimiento legal completo).
+- 🟡 **CF-05 sin constraint de BD** (índice parcial único `WHERE vigente`). → **diferido:** la app enforce una sola vigente + evento auditado; el constraint es refuerzo anti-concurrencia.
+- 🟡 **Migraciones no ejercitadas por un test de `alembic upgrade head`** (los tests usan `create_all` desde la misma metadata que autogenera las migraciones → consistentes por construcción). → **diferido.**
+- 🟡 **CF-02 profundo** (score_maximo vs máximo alcanzable) no es mecánicamente chequeable sin metadata de exclusividad de reglas. → **limitación aceptada y documentada.**
+- 🟢 Menores: mapeo REST de error grueso (`PoliticaInvalida`→422 también para versión duplicada, debería ser 409); `obtener` asume `politica_id==producto`; warning de Starlette (httpx). → diferidos.
+
+**Nota de independencia (M3):** sin revisión externa por decisión del proyecto (ver Fase 1). La Vista de halcón (autocrítica) es el único control.
+
+**Acciones antes de avanzar:** completadas (bloqueante cerrado + sign-off).
+
+**Sign-off:** Fabián (corporativo@caucorp.com) — 2026-06-26
+
+---
+
 ### 2026-06-26 · Auditoría de cierre — Fase 1: Motor + rastro
 
 **Resultado:** APROBADA

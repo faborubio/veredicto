@@ -7,6 +7,19 @@
 
 ---
 
+## 2026-06-26 · Fase 2 CERRADA — Vista de halcón + auditoría
+
+**Qué se hizo:** Vista de halcón de Fase 2 + auditoría APROBADA (sign-off Fabián). `CLAUDE.md` → Fase 3.
+
+- **Bloqueante corregido:** el path SQL (`ModuloSQL`) no tenía test e2e, y los tests de integración compartían un Postgres con estado acumulado (frágil). Solución: **schema limpio por test** en `conftest` (drop+create), tests auto-contenidos, **seam** `ModuloSQL(session_factory=…)`, y `test_di_sql` que ejercita el wiring SQL completo (seed → vigente → evaluar → idempotencia vía Postgres).
+- **Deuda documentada (diferida):** PII en snapshot sin pseudonimizar (§8.1); CF-05 sin constraint de BD (índice parcial único); migraciones sin test de `upgrade head`; CF-02 profundo no mecánicamente chequeable; mapeo REST de error grueso.
+
+**Dónde quedó:** Fase 2 firmada. Gate verde (ruff · format · mypy 73 · lint-imports 3/3 · **pytest 155**, 8 integración aislados). CI verde. Stack de persistencia completo y probado punta a punta.
+
+**Próximos pasos (Fase 3 — Simulación):** `MotorSimulacion` (replay de política candidata sobre los **snapshots ya persistidos**, sin re-llamar al buró) + reporte de impacto what-if (flips aprob↔rech, deltas, distribución). Casos: SI-01 (snapshots incompletos), SI-02 (regla candidata con `fuente_dato` ausente en histórico → "no evaluable"), SI-03 (rendimiento), SI-04 (sin efectos). Caso de uso `SimularCambioRegla` + endpoint. Resuelve placeholders R3 restantes (`simular`/`criterio`).
+
+---
+
 ## 2026-06-26 · Fase 2 (incremento 3) — GestionarReglas + API gestión + DI env-driven
 
 **Qué se hizo:** configurabilidad completa — crear/validar/activar versiones de política.
