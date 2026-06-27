@@ -9,6 +9,7 @@
   <img alt="mypy" src="https://img.shields.io/badge/mypy-strict-blue">
   <img alt="ruff" src="https://img.shields.io/badge/lint-ruff-261230?logo=ruff&logoColor=white">
   <img alt="arquitectura" src="https://img.shields.io/badge/arquitectura-Clean%20%2B%20DDD-6e5494">
+  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"></a>
 </p>
 
 Motor de decisión de crédito de consumo (dominio chileno) construido sobre **Clean Architecture**: un núcleo de dominio puro y determinista, reglas como datos versionados, rastro de auditoría completo por decisión, simulación *what-if* sobre población histórica, y una **capa MCP** que permite a un analista preguntarle a Claude *"¿por qué se rechazó la solicitud X?"* o *"simula bajar el tope de DTI a 40%"*.
@@ -163,5 +164,5 @@ Este repo usa un sistema de **documentación viva** para continuidad de contexto
 
 ## Nota
 
-Proyecto educativo / de portafolio. El buró de crédito es un adaptador **simulado**; no maneja dinero real ni datos productivos. Código propietario (ver `pyproject.toml`); publicado como muestra de trabajo.
+Proyecto educativo / de portafolio. El buró de crédito es un adaptador **simulado**; no maneja dinero real ni datos productivos. Licencia [MIT](./LICENSE).
 </content>

@@ -4,8 +4,8 @@ version = "0.0.0"
 description = "Motor de decisión de crédito determinista, auditable y explicable, con capa MCP."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "Proprietary" }
-authors = [{ name = "Veredicto" }]
+license = { text = "MIT" }
+authors = [{ name = "Fabián Rubio" }]
 
 # Dependencias de runtime. Mínimas en Fase 0: el esqueleto no necesita la web aún,
 # pero declaramos el stack acordado en el SAD §2.1 para fijar versiones desde el inicio.
