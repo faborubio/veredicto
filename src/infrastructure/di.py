@@ -1,33 +1,54 @@
 """Composition root: cableado de puertos→adaptadores con `injector` (ADR-001).
 
-Es el único lugar que conoce a la vez los casos de uso (`application/`) y los
-adaptadores concretos (`infrastructure/`). REST y MCP piden los casos de uso ya
-cableados; ninguna capa de entrega conoce las implementaciones concretas.
+Único lugar que conoce casos de uso (`application/`) y adaptadores concretos
+(`infrastructure/`). La persistencia se elige por entorno:
+  - por defecto: repos en memoria (dev/tests rápidos, sin BD);
+  - `VEREDICTO_PERSISTENCIA=sql`: repos SQLAlchemy sobre Postgres.
 
-En Fase 1 los adaptadores son en memoria + buró simulado, sembrados con la
-política de consumo v1. La sustitución por SQLAlchemy en Fase 2 es un cambio de
-binds aquí, sin tocar dominio ni aplicación.
+Cambiar de una a otra es sólo cambiar el módulo de binds —sin tocar dominio ni
+aplicación—, que es justo el pago de la Clean Architecture (ADR-001).
 """
 
 from __future__ import annotations
 
+import os
+
 from injector import Injector, Module, provider, singleton
 
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
+from application.casos_uso.gestionar_reglas import GestionarReglas
+from domain.errores import PoliticaInexistente
 from domain.ports.gateway_buro import GatewayBuro
+from domain.ports.repositorio_activaciones import RepositorioActivaciones
 from domain.ports.repositorio_decisiones import RepositorioDecisiones
 from domain.ports.repositorio_politicas import RepositorioPoliticas
 from domain.services.motor_evaluacion import MotorEvaluacion
 from infrastructure.buro.buro_simulado import ESCENARIOS_DEMO, BuroSimulado
+from infrastructure.persistence.db import crear_engine, crear_session_factory
 from infrastructure.persistence.memoria import (
+    RepositorioActivacionesMemoria,
     RepositorioDecisionesMemoria,
     RepositorioPoliticasMemoria,
 )
+from infrastructure.persistence.repositorio_activaciones_sql import (
+    RepositorioActivacionesSQLAlchemy,
+)
+from infrastructure.persistence.repositorio_decisiones_sql import RepositorioDecisionesSQLAlchemy
+from infrastructure.persistence.repositorio_politicas_sql import RepositorioPoliticasSQLAlchemy
 from infrastructure.seed.politica_consumo import politica_consumo_v1
 
 
-class ModuloVeredicto(Module):
-    """Binds de la fase local (en memoria + buró simulado)."""
+def _sembrar(politicas: RepositorioPoliticas) -> None:
+    """Asegura la política de consumo v1 vigente (idempotente)."""
+    try:
+        politicas.obtener("consumo", 1)
+    except PoliticaInexistente:
+        politicas.guardar_version(politica_consumo_v1())
+        politicas.activar("consumo", "consumo", 1)
+
+
+class ModuloAplicacion(Module):
+    """Casos de uso + adaptadores que no dependen de la persistencia."""
 
     @provider
     @singleton
@@ -41,18 +62,6 @@ class ModuloVeredicto(Module):
 
     @provider
     @singleton
-    def repositorio_politicas(self) -> RepositorioPoliticas:
-        repo = RepositorioPoliticasMemoria()
-        repo.guardar_version(politica_consumo_v1())
-        return repo
-
-    @provider
-    @singleton
-    def repositorio_decisiones(self) -> RepositorioDecisiones:
-        return RepositorioDecisionesMemoria()
-
-    @provider
-    @singleton
     def evaluar_solicitud(
         self,
         motor: MotorEvaluacion,
@@ -62,6 +71,66 @@ class ModuloVeredicto(Module):
     ) -> EvaluarSolicitud:
         return EvaluarSolicitud(motor, politicas, decisiones, buro)
 
+    @provider
+    @singleton
+    def gestionar_reglas(
+        self,
+        politicas: RepositorioPoliticas,
+        activaciones: RepositorioActivaciones,
+    ) -> GestionarReglas:
+        return GestionarReglas(politicas, activaciones)
+
+
+class ModuloMemoria(Module):
+    """Persistencia en memoria (por defecto)."""
+
+    @provider
+    @singleton
+    def politicas(self) -> RepositorioPoliticas:
+        repo = RepositorioPoliticasMemoria()
+        _sembrar(repo)
+        return repo
+
+    @provider
+    @singleton
+    def decisiones(self) -> RepositorioDecisiones:
+        return RepositorioDecisionesMemoria()
+
+    @provider
+    @singleton
+    def activaciones(self) -> RepositorioActivaciones:
+        return RepositorioActivacionesMemoria()
+
+
+class ModuloSQL(Module):
+    """Persistencia SQLAlchemy sobre Postgres (`VEREDICTO_PERSISTENCIA=sql`)."""
+
+    def __init__(self) -> None:
+        self._sf = crear_session_factory(crear_engine())
+
+    @provider
+    @singleton
+    def politicas(self) -> RepositorioPoliticas:
+        repo = RepositorioPoliticasSQLAlchemy(self._sf)
+        _sembrar(repo)
+        return repo
+
+    @provider
+    @singleton
+    def decisiones(self) -> RepositorioDecisiones:
+        return RepositorioDecisionesSQLAlchemy(self._sf)
+
+    @provider
+    @singleton
+    def activaciones(self) -> RepositorioActivaciones:
+        return RepositorioActivacionesSQLAlchemy(self._sf)
+
+
+def _modulo_persistencia() -> Module:
+    if os.environ.get("VEREDICTO_PERSISTENCIA") == "sql":
+        return ModuloSQL()
+    return ModuloMemoria()
+
 
 def crear_injector() -> Injector:
-    return Injector([ModuloVeredicto()])
+    return Injector([ModuloAplicacion(), _modulo_persistencia()])

@@ -7,6 +7,23 @@
 
 ---
 
+## 2026-06-26 · Fase 2 (incremento 3) — GestionarReglas + API gestión + DI env-driven
+
+**Qué se hizo:** configurabilidad completa — crear/validar/activar versiones de política.
+
+- **`validar_politica`** (dominio): valida CF-01/02/03 antes de persistir (campos ⊆ contrato + fuente única; score_maximo>0; bandas cubren desde 0). Cierra la deuda de CF-03.
+- **`GestionarReglas`** (aplicación): `crear_version` (valida → guarda, inmutable), `activar` (activa + registra `EventoActivacionPolitica` auditado, ADR-008), `obtener`/`vigente`.
+- **Puerto `RepositorioPoliticas.activar`** añadido; memoria ahora separa guardar de activar (consistente con SQL; `guardar_version` ya no auto-activa).
+- **Activaciones persistidas:** `ActivacionORM` + `RepositorioActivacionesSQLAlchemy` + migración `26f1cedb966d`.
+- **API REST de gestión:** `GET /politicas/{producto}/vigente`, `GET /politicas/{producto}/{version}`, `POST /politicas` (crear, valida → 422), `POST /politicas/activar`. Serialización pública en `mapeo_politica`.
+- **DI env-driven:** `ModuloAplicacion` + (`ModuloMemoria` por defecto | `ModuloSQL` si `VEREDICTO_PERSISTENCIA=sql`). El swap a Postgres es sólo cambiar el módulo de binds (pago de ADR-001). Seed idempotente de consumo v1.
+
+**Dónde quedó:** gate verde (ruff · format · mypy 72 · lint-imports 3/3 · pytest 154 = 147 + 7 integración). CASES CF-01..CF-05 🟢. Entregable Fase 2 demostrado por REST: crear v2 → vigente sigue v1 → activar → vigente v2, v1 intacta. **Pendiente menor:** test e2e del path SQL completo vía `ModuloSQL` (los repos SQL están testeados individualmente; el wiring SQL no tiene test e2e aún) — a evaluar en la Vista de halcón.
+
+**Próximos pasos:** **Vista de halcón de Fase 2 + auditoría de cierre** (incremento 4). Luego Fase 3 (simulación what-if sobre los snapshots ya persistidos).
+
+---
+
 ## 2026-06-26 · Fase 2 (incremento 2) — Persistencia de decisiones + snapshot
 
 **Qué se hizo:** decisiones del motor + SNAPSHOT íntegro de insumos en Postgres (ADR-004).

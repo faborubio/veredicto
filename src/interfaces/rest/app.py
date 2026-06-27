@@ -9,19 +9,21 @@ Los errores de dominio tipados se traducen a códigos HTTP (invariante 12).
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Annotated, Any, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
+from application.casos_uso.gestionar_reglas import GestionarReglas
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
-from domain.errores import ErrorDominio, ErrorValidacion
+from domain.errores import ErrorDominio, ErrorValidacion, PoliticaInexistente, PoliticaInvalida
 from domain.value_objects.monto import Monto
 from domain.value_objects.plazo import Plazo
 from domain.value_objects.rut import Rut
 from infrastructure.di import crear_injector
+from infrastructure.persistence.mapeo_politica import politica_a_dict, politica_desde_dict
 
 app = FastAPI(title="Veredicto", version="0.1.0")
 _injector = crear_injector()
@@ -74,6 +76,61 @@ def evaluar(payload: SolicitudIn) -> DecisionOut:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return _a_salida(decision)
+
+
+class ActivarIn(BaseModel):
+    producto: str
+    politica_id: str
+    version: int
+    actor: str
+
+
+@app.get("/politicas/{producto}/vigente")
+def politica_vigente(producto: str) -> dict[str, Any]:
+    try:
+        politica = _injector.get(GestionarReglas).vigente(producto, _ahora())
+    except PoliticaInexistente as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return politica_a_dict(politica)
+
+
+@app.get("/politicas/{producto}/{version}")
+def politica_por_version(producto: str, version: int) -> dict[str, Any]:
+    try:
+        politica = _injector.get(GestionarReglas).obtener(producto, version)
+    except PoliticaInexistente as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return politica_a_dict(politica)
+
+
+@app.post("/politicas", status_code=201)
+def crear_politica(payload: Annotated[dict[str, Any], Body()]) -> dict[str, str]:
+    try:
+        politica = politica_desde_dict(payload)
+    except (ErrorValidacion, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=f"Política mal formada: {exc}") from exc
+    try:
+        _injector.get(GestionarReglas).crear_version(politica)
+    except PoliticaInvalida as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"status": "creada", "id": politica.id, "version": str(politica.version)}
+
+
+@app.post("/politicas/activar")
+def activar_politica(payload: ActivarIn) -> dict[str, str]:
+    try:
+        evento = _injector.get(GestionarReglas).activar(
+            payload.producto, payload.politica_id, payload.version, payload.actor, _ahora()
+        )
+    except PoliticaInexistente as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {
+        "status": "activada",
+        "producto": evento.producto,
+        "version": str(evento.politica_version),
+        "actor": evento.actor,
+        "momento": evento.momento,
+    }
 
 
 def _ahora() -> str:

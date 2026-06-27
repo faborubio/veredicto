@@ -11,12 +11,12 @@ from domain.entities.activacion import EventoActivacionPolitica
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.insumos import Insumos
 from domain.entities.politica import Politica
-from domain.errores import PoliticaInexistente
+from domain.errores import PoliticaInexistente, PoliticaInvalida
 
 
 class RepositorioPoliticasMemoria:
-    """Guarda versiones de política por (id, version). Una sola vigente por
-    producto en Fase 1 (la última guardada)."""
+    """Guarda versiones de política por (id, version). Activación explícita
+    (consistente con el repo SQL): `guardar_version` no marca vigente."""
 
     def __init__(self) -> None:
         self._por_version: dict[tuple[str, int], Politica] = {}
@@ -35,8 +35,16 @@ class RepositorioPoliticasMemoria:
             raise PoliticaInexistente(f"No hay política vigente para '{producto}'.") from exc
 
     def guardar_version(self, politica: Politica) -> None:
-        self._por_version[(politica.id, politica.version)] = politica
-        self._vigente_por_producto[politica.producto] = politica
+        clave = (politica.id, politica.version)
+        if clave in self._por_version:
+            raise PoliticaInvalida(
+                f"La política {politica.id} v{politica.version} ya existe; es inmutable (CF-04)."
+            )
+        self._por_version[clave] = politica
+
+    def activar(self, producto: str, politica_id: str, version: int) -> None:
+        politica = self.obtener(politica_id, version)
+        self._vigente_por_producto[producto] = politica
 
 
 class RepositorioDecisionesMemoria:

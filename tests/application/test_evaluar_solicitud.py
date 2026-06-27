@@ -26,6 +26,7 @@ _MOMENTO = "2026-06-26T12:00:00+00:00"
 def _caso_de_uso() -> tuple[EvaluarSolicitud, RepositorioDecisionesMemoria]:
     politicas = RepositorioPoliticasMemoria()
     politicas.guardar_version(politica_consumo_v1())
+    politicas.activar("consumo", "consumo", 1)
     decisiones = RepositorioDecisionesMemoria()
     caso = EvaluarSolicitud(
         motor=MotorEvaluacion(),

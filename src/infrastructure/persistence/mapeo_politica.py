@@ -88,3 +88,34 @@ def politica_desde_orm(orm: PoliticaORM) -> Politica:
         config_scoring=_config_desde_dict(orm.config_scoring),
         vigencia=Vigencia(efectiva_desde=orm.efectiva_desde, efectiva_hasta=orm.efectiva_hasta),
     )
+
+
+def politica_a_dict(politica: Politica) -> dict[str, Any]:
+    """Serialización JSON-compatible de una política (para la API REST/MCP)."""
+    return {
+        "id": politica.id,
+        "version": politica.version,
+        "producto": politica.producto,
+        "reglas": [_regla_a_dict(r) for r in politica.reglas],
+        "config_scoring": _config_a_dict(politica.config_scoring),
+        "vigencia": {
+            "efectiva_desde": politica.vigencia.efectiva_desde,
+            "efectiva_hasta": politica.vigencia.efectiva_hasta,
+        },
+    }
+
+
+def politica_desde_dict(d: dict[str, Any]) -> Politica:
+    """Reconstruye una política desde su forma JSON (crear versión vía API)."""
+    vigencia = d["vigencia"]
+    return Politica(
+        id=d["id"],
+        version=d["version"],
+        producto=d["producto"],
+        reglas=tuple(_regla_desde_dict(r) for r in d["reglas"]),
+        config_scoring=_config_desde_dict(d["config_scoring"]),
+        vigencia=Vigencia(
+            efectiva_desde=vigencia["efectiva_desde"],
+            efectiva_hasta=vigencia.get("efectiva_hasta"),
+        ),
+    )

@@ -52,3 +52,17 @@ class DecisionORM(Base):
     rastro: Mapped[Any] = mapped_column(JSONB)
     snapshot: Mapped[Any] = mapped_column(JSONB)
     creada_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ActivacionORM(Base):
+    """Evento auditado de activación de política (ADR-008): quién/qué/cuándo."""
+
+    __tablename__ = "activaciones"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    politica_id: Mapped[str] = mapped_column(String)
+    politica_version: Mapped[int] = mapped_column(Integer)
+    producto: Mapped[str] = mapped_column(String, index=True)
+    actor: Mapped[str] = mapped_column(String)
+    momento: Mapped[str] = mapped_column(String)
+    creada_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

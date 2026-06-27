@@ -21,3 +21,8 @@ class RepositorioPoliticas(Protocol):
     def guardar_version(self, politica: Politica) -> None:
         """Persiste una NUEVA versión. Nunca muta una existente (CF-04)."""
         ...
+
+    def activar(self, producto: str, politica_id: str, version: int) -> None:
+        """Marca (politica_id, version) como la única vigente del producto (CF-05).
+        Guardar y activar son operaciones separadas (ADR-008)."""
+        ...
