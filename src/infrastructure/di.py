@@ -167,3 +167,21 @@ def _modulo_persistencia() -> Module:
 
 def crear_injector() -> Injector:
     return Injector([ModuloAplicacion(), _modulo_persistencia()])
+
+
+_injector_compartido: Injector | None = None
+
+
+def obtener_injector() -> Injector:
+    """Composition root ÚNICO del proceso, compartido por REST y MCP (Fase 5, inc 1).
+
+    REST y MCP son adaptadores hermanos sobre los mismos casos de uso (ADR-005); al
+    correr en un solo proceso ASGI comparten este injector → una sola conexión y un
+    solo store. Resuelve que antes el MCP tuviera su propio injector (store en memoria
+    vacío). `crear_injector` sigue disponible para tests que necesiten una instancia
+    aislada.
+    """
+    global _injector_compartido
+    if _injector_compartido is None:
+        _injector_compartido = crear_injector()
+    return _injector_compartido

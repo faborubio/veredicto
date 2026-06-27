@@ -40,6 +40,25 @@ npx @modelcontextprotocol/inspector python -m interfaces.mcp.server
 > en memoria. La cobertura de protocolo (initialize/list/call) está en
 > `tests/test_mcp_protocol_e2e.py`; este `npx` es el smoke manual del transporte stdio.
 
+### Entrypoint unificado (REST + MCP en un proceso)
+
+Para el camino **HTTP/remoto** hay un único entrypoint ASGI que sirve ambos
+adaptadores en un solo proceso/puerto (Fase 5, inc 1):
+
+```bash
+uvicorn interfaces.asgi:app --reload
+#  /        → REST (FastAPI)  — http://localhost:8000/docs
+#  /mcp     → MCP (FastMCP) sobre Streamable HTTP  — http://localhost:8000/mcp
+```
+
+- **Un solo composition root** (`obtener_injector`) compartido por REST y MCP →
+  una conexión, un store. Con `VEREDICTO_PERSISTENCIA=sql` ambos ven la misma BD.
+- MCP corre `stateless_http` (escalable detrás de balanceador / Cloud Run).
+- REST y MCP siguen siendo adaptadores hermanos (ADR-005): MCP **no** pasa por REST.
+- Dos modos de MCP conviven: **stdio** (`python -m interfaces.mcp.server`) para
+  Claude Desktop local; **HTTP** (`interfaces.asgi:app`, ruta `/mcp`) para remoto.
+- Cobertura: `tests/test_asgi_unificado.py` (REST + MCP-HTTP en un proceso, in-process).
+
 ### Conectar a Claude Desktop
 
 Agregar el servidor a la configuración de MCP del host (ejemplo conceptual):

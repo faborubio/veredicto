@@ -21,11 +21,11 @@ from application.casos_uso.simular_cambio_regla import SimularCambioRegla
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.reporte_impacto import CriterioSimulacion, ReporteImpacto
 from domain.errores import DecisionInexistente, ErrorDominio, ErrorValidacion, PoliticaInexistente
-from infrastructure.di import crear_injector
+from infrastructure.di import obtener_injector
 from infrastructure.persistence.mapeo_politica import politica_desde_dict
 
 mcp: FastMCP[Any] = FastMCP("veredicto")
-_injector = crear_injector()
+_injector = obtener_injector()  # compartido con REST en el proceso ASGI unificado
 
 
 @mcp.tool

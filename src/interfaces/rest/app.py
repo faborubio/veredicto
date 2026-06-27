@@ -24,11 +24,11 @@ from domain.errores import ErrorDominio, ErrorValidacion, PoliticaInexistente, P
 from domain.value_objects.monto import Monto
 from domain.value_objects.plazo import Plazo
 from domain.value_objects.rut import Rut
-from infrastructure.di import crear_injector
+from infrastructure.di import obtener_injector
 from infrastructure.persistence.mapeo_politica import politica_a_dict, politica_desde_dict
 
 app = FastAPI(title="Veredicto", version="0.1.0")
-_injector = crear_injector()
+_injector = obtener_injector()  # compartido con MCP en el proceso ASGI unificado
 
 
 class SolicitudIn(BaseModel):
