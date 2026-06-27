@@ -58,6 +58,12 @@ def test_round_trip_decision_y_rastro(repo: RepositorioDecisionesSQLAlchemy) -> 
 
     assert recuperada == decision  # igualdad profunda, incluido el rastro completo
 
+    # casos_para_simulacion devuelve (snapshot, resultado original) — base del what-if.
+    casos = repo.casos_para_simulacion(None)
+    assert len(casos) == 1
+    assert casos[0].resultado_original is decision.resultado
+    assert casos[0].snapshot == insumos
+
 
 def test_snapshot_se_reconstruye_fiel(repo: RepositorioDecisionesSQLAlchemy) -> None:
     insumos = _insumos("dec-2")

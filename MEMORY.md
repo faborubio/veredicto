@@ -7,6 +7,22 @@
 
 ---
 
+## 2026-06-26 · Fase 3 (incrementos 1-2) — Simulación what-if
+
+**Qué se hizo:** motor de simulación puro + cableado end-to-end.
+
+- **`MotorSimulacion`** (dominio, PURO): replay de una política candidata sobre snapshots históricos, sin re-llamar al buró ni persistir (SI-04). Reporte de impacto: flips (matriz origen→destino), distribución original/candidata, `sin_cambio`, y **`reglas_no_evaluables`** (SI-02: reglas que leen `fuente_dato` fuera del contrato capturado → se reportan, no se inventan). Salida determinista (orden estable de resultados). Resuelve el placeholder `simular`.
+- **`ReporteImpacto` + `CasoHistorico`** (value objects de dominio).
+- **`casos_para_simulacion`** añadido al puerto `RepositorioDecisiones` + memoria + SQL (pares snapshot+resultado original).
+- **`SimularCambioRegla`** (caso de uso): carga casos + simula, sin efectos.
+- **REST `POST /simulaciones`**: política candidata (draft, NO se valida como versión real) → reporte. DI cablea `MotorSimulacion` + `SimularCambioRegla`.
+
+**Dónde quedó:** gate verde (ruff · format · mypy 77 · lint-imports 3/3 · **pytest 166** = 158 unit + 8 integración). CASES SI-02/SI-04 🟢; SI-01 🟡; SI-03 🔴 (deuda: hoy carga toda la población en memoria, sin paginar). Entregable Fase 3 demostrado: simular política candidata más estricta → flips APROBADO→REVISION reportados.
+
+**Próximos pasos:** **Vista de halcón de Fase 3 + auditoría de cierre** (incremento 3). Candidatos ya anotados: SI-03 (rendimiento/streaming), `criterio` de simulación aún `object` (sin filtro real por fechas/producto). Luego Fase 4 (capa MCP: herramientas read-only sobre estos casos de uso).
+
+---
+
 ## 2026-06-26 · Fase 2 CERRADA — Vista de halcón + auditoría
 
 **Qué se hizo:** Vista de halcón de Fase 2 + auditoría APROBADA (sign-off Fabián). `CLAUDE.md` → Fase 3.

@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.insumos import Insumos
+from domain.entities.politica import ResultadoDecision
+from domain.entities.reporte_impacto import CasoHistorico
 from infrastructure.persistence.mapeo_decision import (
     decision_a_orm,
     decision_desde_orm,
@@ -41,7 +43,15 @@ class RepositorioDecisionesSQLAlchemy:
             s.commit()
 
     def snapshots_de_poblacion(self, criterio: object) -> list[Insumos]:
-        # Población completa en Fase 2; el filtrado real (rango/producto) llega en
-        # Fase 3 junto con la simulación.
         with self._sf() as s:
             return [snapshot_desde_orm(o) for o in s.scalars(select(DecisionORM)).all()]
+
+    def casos_para_simulacion(self, criterio: object) -> list[CasoHistorico]:
+        with self._sf() as s:
+            return [
+                CasoHistorico(
+                    snapshot=snapshot_desde_orm(o),
+                    resultado_original=ResultadoDecision(o.resultado),
+                )
+                for o in s.scalars(select(DecisionORM)).all()
+            ]

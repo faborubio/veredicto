@@ -18,12 +18,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
 from application.casos_uso.gestionar_reglas import GestionarReglas
+from application.casos_uso.simular_cambio_regla import SimularCambioRegla
 from domain.errores import PoliticaInexistente
 from domain.ports.gateway_buro import GatewayBuro
 from domain.ports.repositorio_activaciones import RepositorioActivaciones
 from domain.ports.repositorio_decisiones import RepositorioDecisiones
 from domain.ports.repositorio_politicas import RepositorioPoliticas
 from domain.services.motor_evaluacion import MotorEvaluacion
+from domain.services.motor_simulacion import MotorSimulacion
 from infrastructure.buro.buro_simulado import ESCENARIOS_DEMO, BuroSimulado
 from infrastructure.persistence.db import crear_engine, crear_session_factory
 from infrastructure.persistence.memoria import (
@@ -80,6 +82,20 @@ class ModuloAplicacion(Module):
         activaciones: RepositorioActivaciones,
     ) -> GestionarReglas:
         return GestionarReglas(politicas, activaciones)
+
+    @provider
+    @singleton
+    def motor_simulacion(self, motor: MotorEvaluacion) -> MotorSimulacion:
+        return MotorSimulacion(motor)
+
+    @provider
+    @singleton
+    def simular_cambio_regla(
+        self,
+        motor_simulacion: MotorSimulacion,
+        decisiones: RepositorioDecisiones,
+    ) -> SimularCambioRegla:
+        return SimularCambioRegla(motor_simulacion, decisiones)
 
 
 class ModuloMemoria(Module):

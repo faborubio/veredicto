@@ -33,10 +33,10 @@
 
 | # | Caso | Por qué es peligroso | Comportamiento esperado | Estado |
 |---|------|----------------------|--------------------------|--------|
-| SI-01 | Población histórica con snapshots incompletos | Simulación no fiel | Excluir y reportar los casos sin snapshot completo, no inventar datos | 🔴 |
-| SI-02 | Política candidata introduce un nuevo `fuente_dato` ausente en snapshots viejos | El dato no existía cuando se decidió | Marcar esas reglas como "no evaluables sobre histórico" y reportarlo | 🔴 |
-| SI-03 | Población muy grande (rendimiento) | Simulación lenta, mala UX | Medir Big-O; paginar/streamear; no cargar todo en memoria de golpe | 🔴 |
-| SI-04 | Simulación con efectos colaterales | Contamina datos productivos | La simulación NO persiste decisiones; es puramente lectura + cómputo | 🔴 |
+| SI-01 | Población histórica con snapshots incompletos | Simulación no fiel | Excluir y reportar los casos sin snapshot completo, no inventar datos | 🟡 el modelo garantiza snapshot por decisión (`guardar` lo exige); exclusión explícita no necesaria aún |
+| SI-02 | Política candidata introduce un nuevo `fuente_dato` ausente en snapshots viejos | El dato no existía cuando se decidió | Marcar esas reglas como "no evaluables sobre histórico" y reportarlo | 🟢 `MotorSimulacion` reporta `reglas_no_evaluables` sin inventar (`test_si02_regla_no_evaluable_se_reporta_sin_inventar`) |
+| SI-03 | Población muy grande (rendimiento) | Simulación lenta, mala UX | Medir Big-O; paginar/streamear; no cargar todo en memoria de golpe | 🔴 deuda: hoy se carga toda la población en memoria; paginar/streamear pendiente |
+| SI-04 | Simulación con efectos colaterales | Contamina datos productivos | La simulación NO persiste decisiones; es puramente lectura + cómputo | 🟢 `test_simular_no_persiste_nada_si04`; el caso de uso sólo lee |
 
 ## Proceso: Capa MCP
 
