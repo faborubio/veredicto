@@ -36,6 +36,14 @@
 - **Solución:** `uv run ruff format .` y re-commit.
 - **Regla de prevención:** el gate local DEBE espejar el CI exactamente: `ruff check . && ruff format --check . && mypy src && lint-imports && pytest`. Correr `ruff format` antes de cada commit.
 
+### TS-004 · Commits no cuentan como contribuciones (email de autor equivocado)
+
+- **Síntoma:** los push no aparecen en las contribuciones del perfil de GitHub del usuario (`faborubio`).
+- **Contexto:** los commits se firmaron con `corporativo@caucorp.com` (email del contexto de sesión).
+- **Causa raíz:** ese email está verificado en OTRA cuenta de GitHub (`corporativospa`, la cuenta corporativa que presta el acceso a Claude). GitHub atribuye el commit a la cuenta dueña del email, no a quien hace push ni a si el repo es privado.
+- **Solución:** config local del repo a `faborubio <fabian.rubiocs@gmail.com>` (la cuenta personal). Historia pasada re-atribuida con `git filter-branch` (reescribe author+committer) + `git push --force` — seguro porque el repo es privado/solo/sin forks.
+- **Regla de prevención:** en este repo, commitear SIEMPRE como `faborubio <fabian.rubiocs@gmail.com>`. La config local ya está fijada — **no pasar `-c user.email` con el corporativo**. Verificar atribución con `gh api repos/OWNER/REPO/commits/HEAD --jq .author.login`. (Repos privados además requieren el toggle *Settings → "Include private contributions on my profile"* para verse en el gráfico público.)
+
 ### TS-000 (ejemplo/plantilla)
 
 - **Síntoma:** descripción observable del error (mensaje, comportamiento).

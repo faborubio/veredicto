@@ -53,7 +53,8 @@ Python 3.12+ · Pydantic v2 · FastAPI · SQLAlchemy 2.0 · PostgreSQL · `injec
 
 ## 5. Fase actual
 
-**FASE 4 — Capa MCP.** (Actualizar este campo al cambiar de fase.)
+**FASE 4 — Capa MCP** (funcionalmente completa, **pendiente auditoría de cierre**).
+> RETOMAR AQUÍ: la capa MCP (5 herramientas read-only + simulación) está implementada, probada (181 tests) y verde en CI (`b775d7b`). Falta **correr la Vista de halcón + auditoría de cierre de Fase 4** (ver `docs/AUDIT.md`) y firmar — eso cierra el portafolio (fases 1–4). Candidato anotado: el server MCP está probado in-process, sin e2e del protocolo stdio (MCP Inspector / Claude Desktop). Luego, Fase 5 (cloud) es opcional.
 > Fase 3 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): motor de simulación what-if puro + reporte de impacto + REST. 167 tests verdes.
 > Fase 2 cerrada y auditada el 2026-06-26: versionado inmutable (Postgres + Alembic), API de gestión, snapshot, DI env-driven.
 > Fase 1 cerrada y auditada el 2026-06-26: motor determinista + rastro + REST mínima + CI.

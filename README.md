@@ -79,7 +79,9 @@ Este repo usa un sistema de **documentación viva** para continuidad de contexto
 
 ## Estado
 
-**Fase 0 — Scaffolding.** Hoja de ruta en [`SAD.md §13`](./SAD.md#13-hoja-de-ruta-por-fases).
+**Fases 1–4 (el portafolio) implementadas.** Fases 0–3 cerradas y auditadas; Fase 4 (capa MCP) funcionalmente completa, pendiente de su auditoría de cierre. Las cinco capacidades del SAD funcionan: evaluación + rastro, configurabilidad versionada, simulación what-if y capa MCP read-only. **181 tests** verdes (incl. integración con Postgres) · CI verde. Hoja de ruta y detalle por fase en [`SAD.md §13`](./SAD.md#13-hoja-de-ruta-por-fases) y [`docs/AUDIT.md`](./docs/AUDIT.md). Fase 5 (cloud/observabilidad) es opcional, fuera del alcance del portafolio.
+
+Endpoints REST: `POST /evaluaciones`, `GET /politicas/{producto}/vigente`, `POST /politicas`, `POST /politicas/activar`, `POST /simulaciones`. Servidor MCP: `python -m interfaces.mcp.server`.
 
 ## Nota
 

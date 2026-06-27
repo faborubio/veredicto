@@ -16,7 +16,7 @@
 - **DI:** providers de `ConsultarDecision`/`ExplicarDecision`. Resuelve el último placeholder de casos de uso esqueleto.
 - **Tests:** casos de uso lectura + contrato de las 5 herramientas (callable directo, sin async). MC-01 (inexistente→respuesta clara), MC-02 (sin PII), MC-03 (no hay tool de escritura), MC-04 (mal formada→error) todos 🟢.
 
-**Dónde quedó:** gate verde (ruff · format · mypy 80 · lint-imports 3/3 · **pytest 181** = 173 unit + 8 integración). CASES MC-01..MC-04 🟢. **Las cinco capacidades del SAD funcionan**; la lógica estaba hecha, la MCP fue casi gratis (como predijo el SAD §4).
+**Dónde quedó:** gate verde y **CI verde (`b775d7b`)** (ruff · format · mypy 80 · lint-imports 3/3 · **pytest 181** = 173 unit + 8 integración). CASES MC-01..MC-04 🟢. **Las cinco capacidades del SAD funcionan**; la lógica estaba hecha, la MCP fue casi gratis (como predijo el SAD §4). Identidad de git del repo ya corregida a `faborubio <fabian.rubiocs@gmail.com>` (ver TROUBLESHOOTING TS-004); NO usar el email corporativo.
 
 **Próximos pasos:** **Vista de halcón de Fase 4 + auditoría de cierre** → cierra el portafolio (fases 1-4). Pendiente menor a evaluar: verificación del server vía MCP Inspector / Claude Desktop real (hoy probado in-process); transporte stdio sin test e2e de protocolo.
 
