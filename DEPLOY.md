@@ -30,6 +30,16 @@ uvicorn interfaces.rest.app:app --reload
 npx @modelcontextprotocol/inspector python -m interfaces.mcp.server
 ```
 
+> ⚠️ **El MCP necesita `VEREDICTO_PERSISTENCIA=sql` para ver decisiones reales.**
+> Por defecto el server levanta la persistencia **en memoria** (`ModuloMemoria`),
+> que en un proceso nuevo arranca con el repositorio de decisiones **vacío** —
+> `consultar_decision` / `explicar_decision` / `rastro_auditoria` devolverán
+> `no_encontrada`. Para consultar decisiones reales, el MCP debe apuntar a la
+> **misma Postgres que escribe REST** (`VEREDICTO_PERSISTENCIA=sql` + `DATABASE_URL`).
+> `listar_reglas` y `simular_cambio_regla` sí operan sobre la política sembrada aun
+> en memoria. La cobertura de protocolo (initialize/list/call) está en
+> `tests/test_mcp_protocol_e2e.py`; este `npx` es el smoke manual del transporte stdio.
+
 ### Conectar a Claude Desktop
 
 Agregar el servidor a la configuración de MCP del host (ejemplo conceptual):
