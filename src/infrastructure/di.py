@@ -16,7 +16,9 @@ import os
 from injector import Injector, Module, provider, singleton
 from sqlalchemy.orm import Session, sessionmaker
 
+from application.casos_uso.consultar_decision import ConsultarDecision
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
+from application.casos_uso.explicar_decision import ExplicarDecision
 from application.casos_uso.gestionar_reglas import GestionarReglas
 from application.casos_uso.simular_cambio_regla import SimularCambioRegla
 from domain.errores import PoliticaInexistente
@@ -82,6 +84,16 @@ class ModuloAplicacion(Module):
         activaciones: RepositorioActivaciones,
     ) -> GestionarReglas:
         return GestionarReglas(politicas, activaciones)
+
+    @provider
+    @singleton
+    def consultar_decision(self, decisiones: RepositorioDecisiones) -> ConsultarDecision:
+        return ConsultarDecision(decisiones)
+
+    @provider
+    @singleton
+    def explicar_decision(self, decisiones: RepositorioDecisiones) -> ExplicarDecision:
+        return ExplicarDecision(decisiones)
 
     @provider
     @singleton

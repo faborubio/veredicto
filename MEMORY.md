@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-06-26 · Fase 4 (incremento 1) — Capa MCP
+
+**Qué se hizo:** servidor MCP read-only + simulación sobre los casos de uso (ADR-005).
+
+- **Casos de uso de lectura implementados:** `ConsultarDecision` (por_solicitud → decisión, o `DecisionInexistente`), `ExplicarDecision` (destila el rastro a `Explicacion`: resultado + score + motivos decisivos según el resultado). VO `Explicacion` (dominio, sin PII).
+- **Servidor FastMCP** (`interfaces/mcp/server.py`, fastmcp 3.4.2): 5 herramientas — `consultar_decision`, `explicar_decision`, `rastro_auditoria`, `listar_reglas`, `simular_cambio_regla`. **Sin `evaluar_solicitud`** (escritura, SAD §5.3). Adaptador delgado: traduce errores de dominio a `{"error": ...}` (no stack traces), no devuelve PII. Descripciones precisas por herramienta.
+- **DI:** providers de `ConsultarDecision`/`ExplicarDecision`. Resuelve el último placeholder de casos de uso esqueleto.
+- **Tests:** casos de uso lectura + contrato de las 5 herramientas (callable directo, sin async). MC-01 (inexistente→respuesta clara), MC-02 (sin PII), MC-03 (no hay tool de escritura), MC-04 (mal formada→error) todos 🟢.
+
+**Dónde quedó:** gate verde (ruff · format · mypy 80 · lint-imports 3/3 · **pytest 181** = 173 unit + 8 integración). CASES MC-01..MC-04 🟢. **Las cinco capacidades del SAD funcionan**; la lógica estaba hecha, la MCP fue casi gratis (como predijo el SAD §4).
+
+**Próximos pasos:** **Vista de halcón de Fase 4 + auditoría de cierre** → cierra el portafolio (fases 1-4). Pendiente menor a evaluar: verificación del server vía MCP Inspector / Claude Desktop real (hoy probado in-process); transporte stdio sin test e2e de protocolo.
+
+---
+
 ## 2026-06-26 · Fase 3 CERRADA — Vista de halcón + auditoría
 
 **Qué se hizo:** Vista de halcón de Fase 3 + auditoría APROBADA (sign-off Fabián). `CLAUDE.md` → Fase 4.
