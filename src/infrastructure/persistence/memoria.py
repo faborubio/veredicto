@@ -11,7 +11,7 @@ from domain.entities.activacion import EventoActivacionPolitica
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.insumos import Insumos
 from domain.entities.politica import Politica
-from domain.entities.reporte_impacto import CasoHistorico
+from domain.entities.reporte_impacto import CasoHistorico, CriterioSimulacion
 from domain.errores import PoliticaInexistente, PoliticaInvalida
 
 
@@ -70,11 +70,13 @@ class RepositorioDecisionesMemoria:
         # Población completa en Fase 1; el filtrado real llega en Fase 3.
         return [snapshot for _, snapshot in self._por_key.values()]
 
-    def casos_para_simulacion(self, criterio: object) -> list[CasoHistorico]:
-        return [
+    def casos_para_simulacion(self, criterio: CriterioSimulacion) -> list[CasoHistorico]:
+        casos = [
             CasoHistorico(snapshot=snapshot, resultado_original=decision.resultado)
             for decision, snapshot in self._por_key.values()
+            if criterio.producto is None or snapshot.solicitud.producto == criterio.producto
         ]
+        return casos if criterio.limite is None else casos[: criterio.limite]
 
 
 class RepositorioActivacionesMemoria:

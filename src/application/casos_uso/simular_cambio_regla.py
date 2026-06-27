@@ -11,7 +11,7 @@ Envuelto por la herramienta MCP `simular_cambio_regla(politica_candidata, poblac
 from __future__ import annotations
 
 from domain.entities.politica import Politica
-from domain.entities.reporte_impacto import ReporteImpacto
+from domain.entities.reporte_impacto import CriterioSimulacion, ReporteImpacto
 from domain.ports.repositorio_decisiones import RepositorioDecisiones
 from domain.services.motor_simulacion import MotorSimulacion
 
@@ -25,6 +25,10 @@ class SimularCambioRegla:
         self._motor = motor_simulacion
         self._decisiones = decisiones
 
-    def ejecutar(self, politica_candidata: Politica, criterio: object = None) -> ReporteImpacto:
-        casos = self._decisiones.casos_para_simulacion(criterio)
+    def ejecutar(
+        self,
+        politica_candidata: Politica,
+        criterio: CriterioSimulacion | None = None,
+    ) -> ReporteImpacto:
+        casos = self._decisiones.casos_para_simulacion(criterio or CriterioSimulacion())
         return self._motor.simular(casos, politica_candidata)

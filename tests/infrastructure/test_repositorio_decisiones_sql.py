@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from domain.entities.insumos import Insumos
 from domain.entities.perfil_crediticio import PerfilCrediticio
+from domain.entities.reporte_impacto import CriterioSimulacion
 from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
 from domain.services.motor_evaluacion import MotorEvaluacion
 from domain.value_objects.disponibilidad import Disponibilidad
@@ -59,7 +60,7 @@ def test_round_trip_decision_y_rastro(repo: RepositorioDecisionesSQLAlchemy) -> 
     assert recuperada == decision  # igualdad profunda, incluido el rastro completo
 
     # casos_para_simulacion devuelve (snapshot, resultado original) — base del what-if.
-    casos = repo.casos_para_simulacion(None)
+    casos = repo.casos_para_simulacion(CriterioSimulacion())
     assert len(casos) == 1
     assert casos[0].resultado_original is decision.resultado
     assert casos[0].snapshot == insumos

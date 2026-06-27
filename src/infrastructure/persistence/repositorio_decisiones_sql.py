@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.insumos import Insumos
 from domain.entities.politica import ResultadoDecision
-from domain.entities.reporte_impacto import CasoHistorico
+from domain.entities.reporte_impacto import CasoHistorico, CriterioSimulacion
 from infrastructure.persistence.mapeo_decision import (
     decision_a_orm,
     decision_desde_orm,
@@ -46,12 +46,18 @@ class RepositorioDecisionesSQLAlchemy:
         with self._sf() as s:
             return [snapshot_desde_orm(o) for o in s.scalars(select(DecisionORM)).all()]
 
-    def casos_para_simulacion(self, criterio: object) -> list[CasoHistorico]:
+    def casos_para_simulacion(self, criterio: CriterioSimulacion) -> list[CasoHistorico]:
+        consulta = select(DecisionORM)
+        if criterio.producto is not None:
+            # politica_id == producto en el modelo actual (indexado).
+            consulta = consulta.where(DecisionORM.politica_id == criterio.producto)
+        if criterio.limite is not None:
+            consulta = consulta.limit(criterio.limite)
         with self._sf() as s:
             return [
                 CasoHistorico(
                     snapshot=snapshot_desde_orm(o),
                     resultado_original=ResultadoDecision(o.resultado),
                 )
-                for o in s.scalars(select(DecisionORM)).all()
+                for o in s.scalars(consulta).all()
             ]

@@ -72,6 +72,36 @@ Marcar cada ítem antes de cerrar una fase:
 
 <!-- Anexar nuevas auditorías ABAJO, en orden cronológico. -->
 
+### 2026-06-26 · Auditoría de cierre — Fase 3: Simulación
+
+**Resultado:** APROBADA
+
+**Checklist:**
+
+- [x] **Vista de halcón corrida y registrada** (abajo); bloqueante cerrado.
+- [x] Entregable Fase 3 (`SAD §13`): motor de simulación + reporte de impacto what-if. Demostrable por REST: simular candidata más estricta → flips APROBADO→REVISIÓN reportados.
+- [x] **Fronteras intactas:** import-linter 3/3 KEPT; `MotorSimulacion` puro (sin I/O, sin efectos, SI-04).
+- [x] **Invariantes:** determinismo de la simulación (orden estable); reusa snapshots, no re-llama al buró; no inventa datos (SI-02 → `reglas_no_evaluables`).
+- [x] Tests verdes: 167 (159 unit + 8 integración). Property/golden de fases previas intactos.
+- [x] Casos SI-02/SI-04 🟢; SI-01 🟡; SI-03 🔴 (deuda documentada). `CASES.md` actualizado.
+- [x] `MEMORY.md` actualizado; `CLAUDE.md` → Fase 4; sin secretos. **CI verde.**
+
+**Calidad (gate):** ruff ✓ · format ✓ · mypy --strict ✓ (77, src+tests) · lint-imports ✓ (3/3) · pytest ✓ (167).
+
+**Vista de halcón (revisión crítica):**
+- 🔴 **`criterio` de simulación era `object`** (placeholder R3) y la simulación cargaba TODA la población sin acotar ni filtrar por producto (incorrecto multi-producto). → **corregido ahora:** `CriterioSimulacion(producto, limite)` tipado, propagado a puerto/repos (memoria + SQL `WHERE`/`LIMIT`)/caso de uso/REST (query params). Resuelve el placeholder + corrección multi-producto + acota población (mitiga SI-03).
+- 🟡 **SI-03 streaming real** pendiente: con `limite` queda acotado, pero `yield_per` server-side (no materializar lista) queda como deuda.
+- 🟡 **`_sin_reglas` calcula el impacto sobre el subconjunto evaluable:** honesto (reporta `reglas_no_evaluables`), pero los números excluyen esas reglas. Documentado; el consumidor ve la lista.
+- 🟢 Menores: simulación compara contra el resultado original real (no un baseline recomputado) — correcto; orden de `dict.values()` estable en memoria.
+
+**Nota de independencia (M3):** sin revisión externa por decisión del proyecto. La Vista de halcón (autocrítica) es el único control.
+
+**Acciones antes de avanzar:** completadas (bloqueante cerrado + sign-off).
+
+**Sign-off:** Fabián (corporativo@caucorp.com) — 2026-06-26
+
+---
+
 ### 2026-06-26 · Auditoría de cierre — Fase 2: Configurabilidad
 
 **Resultado:** APROBADA

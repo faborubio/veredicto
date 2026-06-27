@@ -18,7 +18,7 @@ from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
 from application.casos_uso.gestionar_reglas import GestionarReglas
 from application.casos_uso.simular_cambio_regla import SimularCambioRegla
 from domain.entities.decision_motor import DecisionMotor
-from domain.entities.reporte_impacto import ReporteImpacto
+from domain.entities.reporte_impacto import CriterioSimulacion, ReporteImpacto
 from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
 from domain.errores import ErrorDominio, ErrorValidacion, PoliticaInexistente, PoliticaInvalida
 from domain.value_objects.monto import Monto
@@ -136,17 +136,23 @@ def activar_politica(payload: ActivarIn) -> dict[str, str]:
 
 
 @app.post("/simulaciones")
-def simular(payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+def simular(
+    payload: Annotated[dict[str, Any], Body()],
+    producto: str | None = None,
+    limite: int | None = None,
+) -> dict[str, Any]:
     """What-if: reevalúa la población histórica con una política candidata (draft).
     No valida la candidata como versión real: las reglas que leen datos no
-    capturados se reportan como no evaluables (SI-02), no se rechazan."""
+    capturados se reportan como no evaluables (SI-02), no se rechazan. `producto` y
+    `limite` (query) acotan la población."""
     try:
         candidata = politica_desde_dict(payload)
     except (ErrorValidacion, KeyError, TypeError) as exc:
         raise HTTPException(
             status_code=422, detail=f"Política candidata mal formada: {exc}"
         ) from exc
-    reporte = _injector.get(SimularCambioRegla).ejecutar(candidata)
+    criterio = CriterioSimulacion(producto=producto, limite=limite)
+    reporte = _injector.get(SimularCambioRegla).ejecutar(candidata, criterio)
     return _reporte_a_dict(reporte)
 
 

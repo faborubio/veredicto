@@ -11,6 +11,7 @@ from application.casos_uso.simular_cambio_regla import SimularCambioRegla
 from domain.entities.insumos import Insumos
 from domain.entities.perfil_crediticio import PerfilCrediticio
 from domain.entities.politica import Banda, ResultadoDecision
+from domain.entities.reporte_impacto import CriterioSimulacion
 from domain.entities.solicitud import SituacionLaboral, Solicitante, Solicitud
 from domain.services.motor_evaluacion import MotorEvaluacion
 from domain.services.motor_simulacion import MotorSimulacion
@@ -78,3 +79,10 @@ def test_simular_no_persiste_nada_si04() -> None:
     antes = len(decisiones.snapshots_de_poblacion(None))
     SimularCambioRegla(MotorSimulacion(_MOTOR), decisiones).ejecutar(_POLITICA)
     assert len(decisiones.snapshots_de_poblacion(None)) == antes  # sin efectos
+
+
+def test_criterio_limita_la_poblacion() -> None:
+    decisiones = _decisiones_con_n_aprobados(5)
+    caso_uso = SimularCambioRegla(MotorSimulacion(_MOTOR), decisiones)
+    reporte = caso_uso.ejecutar(_POLITICA, CriterioSimulacion(limite=2))
+    assert reporte.total_evaluados == 2

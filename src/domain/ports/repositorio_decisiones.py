@@ -6,7 +6,7 @@ from typing import Protocol
 
 from domain.entities.decision_motor import DecisionMotor
 from domain.entities.insumos import Insumos
-from domain.entities.reporte_impacto import CasoHistorico
+from domain.entities.reporte_impacto import CasoHistorico, CriterioSimulacion
 
 
 class RepositorioDecisiones(Protocol):
@@ -34,8 +34,8 @@ class RepositorioDecisiones(Protocol):
         `criterio` se tipa en Fase 3 (rango de fechas/producto)."""
         ...
 
-    def casos_para_simulacion(self, criterio: object) -> list[CasoHistorico]:
-        """Carga pares (snapshot, resultado original) para el what-if (§6.2).
-        El motor de simulación reevalúa el snapshot con la política candidata y
-        compara contra el resultado original."""
+    def casos_para_simulacion(self, criterio: CriterioSimulacion) -> list[CasoHistorico]:
+        """Carga pares (snapshot, resultado original) para el what-if (§6.2),
+        acotados por `criterio` (producto/límite). El motor reevalúa el snapshot
+        con la política candidata y compara contra el resultado original."""
         ...

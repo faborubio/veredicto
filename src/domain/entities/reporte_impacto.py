@@ -18,6 +18,19 @@ from domain.entities.politica import ResultadoDecision
 
 
 @dataclass(frozen=True, slots=True)
+class CriterioSimulacion:
+    """Filtro de la población histórica a simular (SAD §6.2).
+
+    `producto`: acota a un producto (evita simular una candidata de consumo sobre
+    decisiones de otro producto). `limite`: cota superior de casos cargados —
+    mitigación parcial de SI-03 mientras no haya streaming server-side.
+    """
+
+    producto: str | None = None
+    limite: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class CasoHistorico:
     """Un caso del histórico: insumos as-seen + el resultado original del motor."""
 

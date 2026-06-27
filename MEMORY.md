@@ -7,6 +7,19 @@
 
 ---
 
+## 2026-06-26 · Fase 3 CERRADA — Vista de halcón + auditoría
+
+**Qué se hizo:** Vista de halcón de Fase 3 + auditoría APROBADA (sign-off Fabián). `CLAUDE.md` → Fase 4.
+
+- **Bloqueante corregido:** el `criterio` de simulación era `object` (placeholder) y se cargaba toda la población sin filtrar. Solución: **`CriterioSimulacion(producto, limite)`** tipado, propagado a puerto/repos (memoria + SQL `WHERE`/`LIMIT`)/caso de uso/REST (query params `producto`/`limite`). Resuelve el placeholder + corrección multi-producto + acota población (mitiga SI-03).
+- **Deuda documentada (diferida):** SI-03 streaming real (`yield_per` server-side); `_sin_reglas` calcula impacto sobre el subconjunto evaluable (honesto, reporta `reglas_no_evaluables`).
+
+**Dónde quedó:** Fase 3 firmada. Gate verde (ruff · format · mypy 77 · lint-imports 3/3 · **pytest 167**, 8 integración). CI verde. **Cuatro de cinco fases cerradas y auditadas.** Quedan placeholders `object` resueltos salvo lo diferido conscientemente.
+
+**Próximos pasos (Fase 4 — Capa MCP):** servidor FastMCP (stdio) con herramientas **read-only + simulación** sobre los casos de uso existentes (`consultar_decision`, `explicar_decision`, `rastro_auditoria`, `listar_reglas`, `simular_cambio_regla`). SIN `evaluar_solicitud` (escritura, SAD §5.3). Adaptador delgado (ADR-005): la lógica ya existe. Implementar las herramientas en `interfaces/mcp/server.py` (hoy `NotImplementedError`). Descripciones precisas (el modelo elige por ellas). Casos MC-01..MC-04.
+
+---
+
 ## 2026-06-26 · Fase 3 (incrementos 1-2) — Simulación what-if
 
 **Qué se hizo:** motor de simulación puro + cableado end-to-end.
