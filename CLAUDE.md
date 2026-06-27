@@ -53,8 +53,8 @@ Python 3.12+ · Pydantic v2 · FastAPI · SQLAlchemy 2.0 · PostgreSQL · `injec
 
 ## 5. Fase actual
 
-**FASE 4 — Capa MCP** (funcionalmente completa, **pendiente auditoría de cierre**).
-> RETOMAR AQUÍ: la capa MCP (5 herramientas read-only + simulación) está implementada, probada (181 tests) y verde en CI (`b775d7b`). Falta **correr la Vista de halcón + auditoría de cierre de Fase 4** (ver `docs/AUDIT.md`) y firmar — eso cierra el portafolio (fases 1–4). Candidato anotado: el server MCP está probado in-process, sin e2e del protocolo stdio (MCP Inspector / Claude Desktop). Luego, Fase 5 (cloud) es opcional.
+**PORTAFOLIO COMPLETO — Fases 1–4 cerradas y auditadas. Fase 5 (cloud/MCP remoto) opcional.**
+> RETOMAR AQUÍ: **Fase 4 (Capa MCP) CERRADA Y AUDITADA el 2026-06-27** (`docs/AUDIT.md`, APROBADA, sign-off Fabián). Vista de halcón corrida: 2 🟡 baratos cerrados (embudo `ValueError` en `simular_cambio_regla` → MC-04 honesto; test de MC-03 ahora enumera las 5 tools registradas en FastMCP). Gate verde (ruff · format · mypy 80 · lint-imports 3/3 · **pytest 182** = 174 unit + 8 integración). **Deuda diferida a Fase 5:** (a) e2e del transporte stdio (MCP Inspector / Claude Desktop) — hoy probado in-process; (b) documentar en `DEPLOY.md` que MCP requiere `VEREDICTO_PERSISTENCIA=sql` (Postgres compartido con REST) para ver decisiones reales (con memoria por defecto el repo está vacío). **No hay siguiente fase obligatoria;** Fase 5 (AWS/ML/MCP remoto) es opcional según `SAD §13`.
 > Fase 3 cerrada y auditada el 2026-06-26 (`docs/AUDIT.md`, APROBADA): motor de simulación what-if puro + reporte de impacto + REST. 167 tests verdes.
 > Fase 2 cerrada y auditada el 2026-06-26: versionado inmutable (Postgres + Alembic), API de gestión, snapshot, DI env-driven.
 > Fase 1 cerrada y auditada el 2026-06-26: motor determinista + rastro + REST mínima + CI.

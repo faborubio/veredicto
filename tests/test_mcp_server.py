@@ -8,6 +8,7 @@ evaluación). Pobla el estado vía el injector del propio servidor (memoria).
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from application.casos_uso.evaluar_solicitud import EvaluarSolicitud
@@ -74,9 +75,26 @@ def test_simular_cambio_regla_reporta() -> None:
 
 def test_simular_politica_mal_formada() -> None:
     res = server.simular_cambio_regla({"basura": 1})
-    assert res["error"] == "politica_mal_formada"  # MC-04
+    assert res["error"] == "politica_mal_formada"  # MC-04 (falta estructural → KeyError)
 
 
-def test_no_existe_tool_de_escritura() -> None:
-    # MC-03: la capa MCP no expone evaluar_solicitud (escritura).
-    assert not hasattr(server, "evaluar_solicitud")
+def test_simular_politica_enum_invalido() -> None:
+    # MC-04: política estructuralmente completa pero con un enum inválido. El
+    # deserializador lanza ValueError; el adaptador debe enmascararlo, no reventar.
+    corrupta = {**_POLITICA_DICT, "reglas": list(_POLITICA_DICT["reglas"])}
+    corrupta["reglas"][0] = {**corrupta["reglas"][0], "categoria": "BASURA"}
+    res = server.simular_cambio_regla(corrupta)
+    assert res["error"] == "politica_mal_formada"
+
+
+def test_solo_se_exponen_las_cinco_tools_read_only() -> None:
+    # MC-03 (invariante #11): el set de herramientas REGISTRADAS en FastMCP es
+    # exactamente las 5 de lectura/simulación. Nada de escritura por ningún nombre.
+    registradas = {t.name for t in asyncio.run(server.mcp.list_tools())}
+    assert registradas == {
+        "consultar_decision",
+        "explicar_decision",
+        "rastro_auditoria",
+        "listar_reglas",
+        "simular_cambio_regla",
+    }

@@ -72,6 +72,43 @@ Marcar cada ítem antes de cerrar una fase:
 
 <!-- Anexar nuevas auditorías ABAJO, en orden cronológico. -->
 
+### 2026-06-27 · Auditoría de cierre — Fase 4: Capa MCP
+
+**Resultado:** APROBADA
+
+**Checklist:**
+
+- [x] **Vista de halcón corrida y registrada** (abajo); 🟡 baratos cerrados, resto diferido con decisión explícita.
+- [x] Entregable Fase 4 (`SAD §13`): capa MCP (FastMCP, stdio) con **5 herramientas read-only + simulación** sobre los casos de uso (`consultar_decision`, `explicar_decision`, `rastro_auditoria`, `listar_reglas`, `simular_cambio_regla`). SIN `evaluar_solicitud` (escritura, SAD §5.3).
+- [x] **Fronteras intactas:** import-linter 3/3 KEPT. Adaptador delgado (ADR-005), sin lógica de negocio. `dict[str, Any]` es el contrato JSON de MCP, no un `Any` que anule el tipado del dominio.
+- [x] **Invariantes:** sin escrituras de crédito vía MCP (inv. #11); sin PII en las respuestas (MC-02 · §8.1); errores de dominio traducidos a respuestas claras, no stack traces (inv. #12); sin `float`/reloj/azar en el adaptador; salida de simulación con orden estable.
+- [x] Tests verdes: **182** (174 unit + 8 integración). Property/golden de fases previas intactos.
+- [x] Casos MC-01..MC-04 🟢 (MC-03 y MC-04 reforzados en esta auditoría). `CASES.md` actualizado.
+- [x] `MEMORY.md` actualizado; `CLAUDE.md` → Fase 4 CERRADA (portafolio fases 1–4 completo; Fase 5 opcional); sin secretos.
+
+**Calidad (gate):** ruff ✓ · format ✓ (80) · mypy --strict ✓ (80, src+tests) · lint-imports ✓ (3/3) · pytest ✓ (182). CI verde en `309d255` (pre-fixes); fixes de cierre re-verificados localmente con el gate completo (sin integración: requiere Postgres).
+
+**Vista de halcón (revisión crítica):**
+- 🟡 **Embudo de error de `simular_cambio_regla` incompleto (contradecía MC-04 🟢).** El `except` capturaba `(ErrorValidacion, KeyError, TypeError)` pero `politica_desde_dict` deserializa enums (`Categoria`/`TipoRegla`/`ResultadoDecision`/`MetodoAgregacion`): un valor fuera del enum lanza **`ValueError`**, no capturado → stack trace al modelo. El test existente usaba `{"basura": 1}` (cae por `KeyError`) y enmascaraba el hueco. → **corregido ahora:** `ValueError` añadido al `except` + `test_simular_politica_enum_invalido` (política estructuralmente completa con `categoria` inválida → `politica_mal_formada`).
+- 🟡 **Test de MC-03 débil.** `assert not hasattr(server, "evaluar_solicitud")` sólo miraba el nombre de un atributo del módulo; no enumeraba las tools realmente registradas en FastMCP. Siendo "sin escrituras vía MCP" el invariante #11, su test era el más flojo. → **corregido ahora:** `test_solo_se_exponen_las_cinco_tools_read_only` aserta que el set registrado (`mcp.list_tools()`) es exactamente las 5 de lectura/simulación.
+- 🟡 **El server por defecto corre contra memoria vacía.** `_injector = crear_injector()` a nivel de módulo; sin `VEREDICTO_PERSISTENCIA=sql` levanta `ModuloMemoria` → repo de decisiones vacío en un proceso `python -m interfaces.mcp.server` real, y las tools de lectura devuelven `no_encontrada`. Es útil sólo apuntando al mismo Postgres que escribe REST. → **deuda operacional diferida:** documentar en `DEPLOY.md`/docstring que MCP requiere `VEREDICTO_PERSISTENCIA=sql` para ver decisiones reales. No es defecto de código.
+- 🟡 **Sin e2e del protocolo stdio.** Las tools se prueban llamando las funciones Python directo, sin pasar por registro/serialización/transporte de FastMCP (aunque el test de las 5 tools sí ejercita el registro). → **diferido a Fase 5** (MCP Inspector / Claude Desktop). Deuda consciente.
+- 🟢 Menores: `listar_reglas` llama `gestor.vigente(producto, "")` con `momento=""` (parámetro sin uso en ese path); el adaptador importa `politica_desde_dict` de `infrastructure.persistence` (igual que REST) — olor leve interfaces→infra, aceptado.
+
+**Sin 🔴 bloqueantes:** ninguna escritura expuesta, sin fuga de PII, sin fuga de frontera, sin no-determinismo.
+
+**Nota de independencia (M3):** sin revisión externa por decisión del proyecto (ver Fase 1). La Vista de halcón (autocrítica) es el único control de cierre.
+
+**Observaciones / deuda aceptada:**
+- MCP requiere `VEREDICTO_PERSISTENCIA=sql` (Postgres compartido con REST) para ver decisiones reales — documentar en `DEPLOY.md`.
+- E2E del transporte stdio (MCP Inspector / Claude Desktop) diferido a Fase 5.
+
+**Acciones antes de avanzar:** N/A — Fase 4 es la última del portafolio. Fase 5 (cloud/MCP remoto) es opcional (`SAD §13`).
+
+**Sign-off:** Fabián (corporativo@caucorp.com) — 2026-06-27
+
+---
+
 ### 2026-06-26 · Auditoría de cierre — Fase 3: Simulación
 
 **Resultado:** APROBADA

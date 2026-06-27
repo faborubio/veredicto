@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-06-27 · Fase 4 CERRADA — Vista de halcón + auditoría · PORTAFOLIO COMPLETO
+
+**Qué se hizo:** Vista de halcón de Fase 4 + auditoría APROBADA (sign-off Fabián). Cierra el portafolio (fases 1–4). `CLAUDE.md` → portafolio completo, Fase 5 opcional.
+
+- **2 🟡 baratos cerrados en el acto** (volvían honestos `🟢` que CASES ya declaraba):
+  - **Embudo de error de `simular_cambio_regla` incompleto (MC-04):** el `except` no capturaba `ValueError`, pero `politica_desde_dict` deserializa enums (`Categoria`/`TipoRegla`/`ResultadoDecision`/`MetodoAgregacion`) → un enum inválido reventaba con stack trace. El test viejo (`{"basura":1}`) caía por `KeyError` y enmascaraba el hueco. **Fix:** `ValueError` al `except` + `test_simular_politica_enum_invalido`.
+  - **Test de MC-03 débil:** `not hasattr(server, "evaluar_solicitud")` sólo miraba el nombre de un atributo del módulo, no las tools registradas. **Fix:** `test_solo_se_exponen_las_cinco_tools_read_only` asevera `mcp.list_tools()` == las 5 read-only/simulación (invariante #11 testeado de verdad).
+- **Deuda diferida a Fase 5 (documentada):** (a) **sin e2e del transporte stdio** (MCP Inspector / Claude Desktop) — hoy in-process, aunque el test de las 5 tools ya ejercita el registro de FastMCP; (b) **el server por defecto corre contra memoria vacía:** `_injector = crear_injector()` a nivel de módulo levanta `ModuloMemoria` sin `VEREDICTO_PERSISTENCIA=sql` → las tools de lectura devuelven `no_encontrada` en un proceso real. Útil sólo apuntando al mismo Postgres que escribe REST → **documentar en `DEPLOY.md`**.
+
+**Dónde quedó:** Fase 4 firmada (2026-06-27). Gate verde (ruff · format · mypy 80 · lint-imports 3/3 · **pytest 182** = 174 unit + 8 integración). **Cuatro fases cerradas y auditadas; no hay siguiente fase obligatoria.** Fase 5 (AWS/ML/MCP remoto) opcional (`SAD §13`). Sin 🔴 bloqueantes en ningún cierre.
+
+**Próximos pasos:** ninguno obligatorio. Si se retoma: Fase 5 opcional, empezando por la deuda diferida (e2e stdio + nota de `VEREDICTO_PERSISTENCIA=sql` en `DEPLOY.md`).
+
+---
+
 ## 2026-06-26 · Fase 4 (incremento 1) — Capa MCP
 
 **Qué se hizo:** servidor MCP read-only + simulación sobre los casos de uso (ADR-005).

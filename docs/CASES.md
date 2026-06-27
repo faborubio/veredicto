@@ -44,8 +44,8 @@
 |---|------|----------------------|--------------------------|--------|
 | MC-01 | Solicitud de explicar una decisión inexistente | Error feo hacia el modelo/usuario | Respuesta clara "no encontrada", no stack trace | 🟢 `DecisionInexistente` → `{"error":"no_encontrada"}` (`test_consultar_inexistente_respuesta_clara`) |
 | MC-02 | Herramienta MCP devuelve PII completa innecesaria | Fuga de datos sensibles | Minimización: devolver sólo lo necesario para explicar | 🟢 respuestas sin RUT/identidad; explicar devuelve resultado/score/motivos (`test_consultar_decision_existente`) |
-| MC-03 | El modelo intenta una operación de escritura vía MCP | Crédito real modificado por lenguaje natural | No exponer escrituras en MVP; herramientas read-only + simulación | 🟢 no existe tool `evaluar_solicitud` (`test_no_existe_tool_de_escritura`) |
-| MC-04 | Parámetro de herramienta con tipo/formato inválido | Llamada que rompe el caso de uso | Validar parámetros y devolver error explicativo al modelo | 🟢 política mal formada → `{"error":"politica_mal_formada"}` (`test_simular_politica_mal_formada`) |
+| MC-03 | El modelo intenta una operación de escritura vía MCP | Crédito real modificado por lenguaje natural | No exponer escrituras en MVP; herramientas read-only + simulación | 🟢 el set REGISTRADO en FastMCP == las 5 read-only/simulación, sin escritura (`test_solo_se_exponen_las_cinco_tools_read_only`) |
+| MC-04 | Parámetro de herramienta con tipo/formato inválido | Llamada que rompe el caso de uso | Validar parámetros y devolver error explicativo al modelo | 🟢 falta estructural (`test_simular_politica_mal_formada`) y **enum inválido** (`test_simular_politica_enum_invalido`, ValueError) → `{"error":"politica_mal_formada"}` |
 
 ---
 

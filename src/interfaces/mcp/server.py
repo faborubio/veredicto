@@ -121,7 +121,9 @@ def simular_cambio_regla(
     las reglas no evaluables sobre el histórico. `producto`/`limite` acotan."""
     try:
         candidata = politica_desde_dict(politica_candidata)
-    except (ErrorValidacion, KeyError, TypeError) as exc:
+    except (ErrorValidacion, KeyError, TypeError, ValueError) as exc:
+        # ValueError cubre enums inválidos (Categoria/TipoRegla/Resultado…): un
+        # valor fuera del enum lanza ValueError al deserializar (MC-04).
         return {"error": "politica_mal_formada", "detalle": str(exc)}
     try:
         reporte = _injector.get(SimularCambioRegla).ejecutar(
